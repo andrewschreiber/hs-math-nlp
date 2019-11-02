@@ -7,3 +7,13 @@
 - Dataset Code from paper: https://github.com/deepmind/mathematics_dataset
 - PyTorch helpers: https://github.com/mandubian/pytorch_math_dataset
 
+### Relevant papers
+
+- Machine Learning Projects for Iterated Distillation and Amplification: https://owainevans.github.io/pdfs/evans_ida_projects.pdf
+- Do NLP Models Know Numbers? Probing Numeracy in Embeddings: https://arxiv.org/pdf/1909.07940.pdf
+- AllenNLP Interpret:
+A Framework for Explaining Predictions of NLP Models: https://arxiv.org/pdf/1909.09251.pdf
+- Attending to Mathematical Language with Transformers: https://arxiv.org/abs/1812.02825
+- All citing papers: https://scholar.google.com/scholar?um=1&ie=UTF-8&lr&cites=5177820928273150256
+
+
