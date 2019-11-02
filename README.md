@@ -1,2 +1,9 @@
-# highschoolmathNLP
-Reproduction of 'Analysing Mathematical Reasoning Abilities of Neural Models' Saxton et. al. 2019
+# Reproduction of 'Analysing Mathematical Reasoning Abilities of Neural Models' Saxton et. al. 2019
+
+## Links
+
+- Arxiv paper: https://arxiv.org/abs/1904.01557
+- ICLR 2019 Open Review: https://openreview.net/forum?id=H1gR5iR5FX
+- Dataset Code from paper: https://github.com/deepmind/mathematics_dataset
+- PyTorch helpers: https://github.com/mandubian/pytorch_math_dataset
+
