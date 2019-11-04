@@ -235,7 +235,7 @@ class MathDatasetManager(data.Dataset):
                 ds.extend(dss)
         return data.ConcatDataset(ds)
 
-   def build_dataset_from_level(self, level):
+    def build_dataset_from_level(self, level):
         """Builds the dataset for a level"""
         ds = []
         for c in ["algebra", "numbers", "polynomials", "arithmetic", "measurement", "comparison", "probability", "calculus"]:
