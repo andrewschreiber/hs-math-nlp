@@ -27,22 +27,22 @@ print("modules of arithmetic", mdsmgr.get_modules_for_category('arithmetic'))
 ds = ""
 
 #ds = mdsmgr.build_dataset_from_module('arithmetic', 'add_or_sub', 'train-easy')
-print("size", len(ds))
+# print("size", len(ds))
 
 # ds = mdsmgr.build_dataset_from_module(
 #    'arithmetic', 'add_or_sub', 'train-easy', max_elements=1000)
-print("size", len(ds))
+# print("size", len(ds))
 
 # ds = mdsmgr.build_dataset_from_modules(
 #    'arithmetic', ['add_or_sub', 'add_sub_multiple'], 'train-easy')
-print("size", len(ds))
+# print("size", len(ds))
 
 #ds = mdsmgr.build_dataset_from_category('arithmetic', 'train-easy')
-print("size", len(ds))
+# print("size", len(ds))
 
 # ds = mdsmgr.build_dataset_from_categories(
 #    ['arithmetic', 'polynomials'], 'train-easy')
-print("size", len(ds))
+# print("size", len(ds))
 
 
 seed = 1
@@ -57,7 +57,7 @@ unique_id = "2019-11-3_2000"
 
 # ds = mdsmgr.build_dataset_from_module(
 #    'algebra', 'linear_1d', 'train-easy')
-print("train-easy dataset size", len(ds))
+# print("train-easy dataset size", len(ds))
 
 ds_interpolate = mdsmgr.build_dataset_from_module(
     'algebra', 'linear_1d', 'interpolate'
@@ -65,12 +65,16 @@ ds_interpolate = mdsmgr.build_dataset_from_module(
 
 print("interpolate dataset size", len(ds_interpolate))
 
-ds_train = mdsmgr.build_dataset_from_module(
-    'arithmetic', 'add_or_sub', 'train-easy')
+
+ds_train = mdsmgr.build_dataset_from_categories(
+    ['arithmetic', 'polynomials'], 'train-easy')
+
+# ds_train = mdsmgr.build_dataset_from_module(
+# 'arithmetic', 'add_or_sub', 'train-easy')
 
 # ds_train = mdsmgr.build_dataset_from_level('train-easy')
 
-print("Full dataset size", len(ds_train))
+print("Train dataset size", len(ds_train))
 
 model = utils.build_transformer()
 
