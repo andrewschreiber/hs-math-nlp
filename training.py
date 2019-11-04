@@ -47,8 +47,8 @@ print("size", len(ds))
 
 seed = 1
 torch.manual_seed(seed)
-#device = torch.device("cuda")
-device = torch.device("cpu")
+device = torch.device("cuda")
+# device = torch.device("cpu")
 print("device", device)
 # torch.cuda.synchronize()
 
@@ -70,7 +70,7 @@ ds_train = mdsmgr.build_dataset_from_module(
 
 # ds_train = mdsmgr.build_dataset_from_level('train-easy')
 
-print("Full dataset size", len(ds))
+print("Full dataset size", len(ds_train))
 
 model = utils.build_transformer()
 
