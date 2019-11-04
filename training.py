@@ -29,18 +29,18 @@ ds = ""
 #ds = mdsmgr.build_dataset_from_module('arithmetic', 'add_or_sub', 'train-easy')
 print("size", len(ds))
 
-#ds = mdsmgr.build_dataset_from_module(
+# ds = mdsmgr.build_dataset_from_module(
 #    'arithmetic', 'add_or_sub', 'train-easy', max_elements=1000)
 print("size", len(ds))
 
-#ds = mdsmgr.build_dataset_from_modules(
+# ds = mdsmgr.build_dataset_from_modules(
 #    'arithmetic', ['add_or_sub', 'add_sub_multiple'], 'train-easy')
 print("size", len(ds))
 
 #ds = mdsmgr.build_dataset_from_category('arithmetic', 'train-easy')
 print("size", len(ds))
 
-#ds = mdsmgr.build_dataset_from_categories(
+# ds = mdsmgr.build_dataset_from_categories(
 #    ['arithmetic', 'polynomials'], 'train-easy')
 print("size", len(ds))
 
@@ -50,12 +50,12 @@ torch.manual_seed(seed)
 #device = torch.device("cuda")
 device = torch.device("cpu")
 print("device", device)
-#torch.cuda.synchronize()
+# torch.cuda.synchronize()
 
 exp_name = "math_ds_full_easy"
 unique_id = "2019-11-3_2000"
 
-#ds = mdsmgr.build_dataset_from_module(
+# ds = mdsmgr.build_dataset_from_module(
 #    'algebra', 'linear_1d', 'train-easy')
 print("train-easy dataset size", len(ds))
 
@@ -65,7 +65,10 @@ ds_interpolate = mdsmgr.build_dataset_from_module(
 
 print("interpolate dataset size", len(ds_interpolate))
 
-ds = mdsmgr.build_dataset_from_level('train-easy')
+ds_train = mdsmgr.build_dataset_from_module(
+    'arithmetic', 'add_or_sub', 'train-easy')
+
+# ds_train = mdsmgr.build_dataset_from_level('train-easy')
 
 print("Full dataset size", len(ds))
 
@@ -75,7 +78,7 @@ optimizer = optim.Adam(model.parameters(), lr=6e-6,
                        betas=(0.9, 0.995), eps=1e-9)
 
 # here we split data in 90/10% for train/validation and use interpolate for test
-train_ds, val_ds = math_dataset.random_split_dataset(ds, split_rate=0.9)
+train_ds, val_ds = math_dataset.random_split_dataset(ds_train, split_rate=0.9)
 
 # we provide the function question_answer_to_position_batch_collate_fn that collates
 # all questions/answers into transformer format enhanced with char positioning
