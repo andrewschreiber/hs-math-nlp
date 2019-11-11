@@ -47,8 +47,8 @@ ds = ""
 
 seed = 1
 torch.manual_seed(seed)
-device = torch.device("cuda")
-# device = torch.device("cpu")
+# device = torch.device("cuda")
+device = torch.device("cpu")
 print("device", device)
 # torch.cuda.synchronize()
 

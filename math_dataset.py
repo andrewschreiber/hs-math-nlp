@@ -222,6 +222,7 @@ class MathDatasetManager(data.Dataset):
             dss = self._build_datasets_from_category(
                 c, typ, max_elements=max_elements)
             ds.extend(dss)
+
         return data.ConcatDataset(ds)
 
     def build_dataset_full(self):
