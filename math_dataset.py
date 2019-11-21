@@ -198,10 +198,11 @@ class MathDatasetManager(data.Dataset):
         """retrieves all mathematical modules in a math problem category"""
         return self.dfs[c].keys()
 
-    def _build_datasets_from_category(self, category, typ, max_elements=None):
+    def _build_datasets_from_category(self, category, typ, max_elements=1000):
         ds = []
         for k, m in self.dfs[category].items():
-            if typ in m:
+            if typ in m and hasattr(m[typ], 'set_max_elements'):
+                print(f"attempting to add module {category}/{k}/{typ}")
                 m[typ].set_max_elements(max_elements)
                 ds.append(m[typ])
                 print(f"added module {category}/{k}/{typ}")
@@ -218,7 +219,7 @@ class MathDatasetManager(data.Dataset):
         """Build a dataset for all modules in several categories"""
         ds = []
         for c in categories:
-            print(f"adding category {c}/../{typ}")
+            print(f"adding category.. {c}/../{typ}")
             dss = self._build_datasets_from_category(
                 c, typ, max_elements=max_elements)
             ds.extend(dss)
