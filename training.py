@@ -95,15 +95,15 @@ if __name__ == '__main__':
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
-        train_ds, batch_size=128, shuffle=True, num_workers=16,
+        train_ds, batch_size=64, shuffle=True, num_workers=16,
         collate_fn=question_answer_to_position_batch_collate_fn)
 
     val_loader = data.DataLoader(
-        val_ds, batch_size=128, shuffle=False, num_workers=16,
+        val_ds, batch_size=64, shuffle=False, num_workers=16,
         collate_fn=question_answer_to_position_batch_collate_fn)
 
     interpolate_loader = data.DataLoader(
-        ds_interpolate, batch_size=128, shuffle=False, num_workers=16,
+        ds_interpolate, batch_size=64, shuffle=False, num_workers=16,
         collate_fn=question_answer_to_position_batch_collate_fn)
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
