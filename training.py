@@ -82,6 +82,7 @@ if __name__ == '__main__':
     # ds_train = mdsmgr.build_dataset_from_level('train-easy')
 
     print("Train dataset size", len(ds_train))
+    print("Interpolate dataset size", len(ds_interpolate))
 
     model = utils.build_transformer()
 
