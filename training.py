@@ -53,7 +53,7 @@ if __name__ == '__main__':
     device = torch.device("cuda")
     # device = torch.device("cpu")
     print("device", device)
-    # torch.cuda.synchronize()
+    torch.cuda.synchronize()
 
     exp_name = "math_easy_arith"
     unique_id = "11-24-19_1"
