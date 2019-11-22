@@ -18,71 +18,39 @@ import math
 import multiprocessing
 
 if __name__ == '__main__':
-    # multiprocessing.set_start_method('spawn', True)
+    # For laptop & deep learning rig testing on the same code
+    if (not torch.cuda.is_available()):
+        multiprocessing.set_start_method('spawn', True)
+        seed = 1
+        torch.manual_seed(seed)
+        device = torch.device("cpu")
+        num_workers = 4
+        max_elements = 150
+    else:
+        seed = 1
+        torch.manual_seed(seed)
+        device = torch.device("cuda")
+        num_workers = 16
+        max_elements = None 
+
+    print("Device", device)
+
     mdsmgr = MathDatasetManager(
         "./mathematics_dataset-v1.0"
     )
 
     print("types", list(mdsmgr.get_types()))
     print("categories", list(mdsmgr.get_categories()))
-    print("modules of arithmetic", mdsmgr.get_modules_for_category('arithmetic'))
+    print("modules: algebra", mdsmgr.get_modules_for_category('algebra'))
 
-    # ds = ""
-
-    #ds = mdsmgr.build_dataset_from_module('arithmetic', 'add_or_sub', 'train-easy')
-    # print("size", len(ds))
-
-    # ds = mdsmgr.build_dataset_from_module(
-    #    'arithmetic', 'add_or_sub', 'train-easy', max_elements=1000)
-    # print("size", len(ds))
-
-    # ds = mdsmgr.build_dataset_from_modules(
-    #    'arithmetic', ['add_or_sub', 'add_sub_multiple'], 'train-easy')
-    # print("size", len(ds))
-
-    # ds = mdsmgr.build_dataset_from_category('arithmetic', 'train-easy')
-    # print("size", len(ds))
-
-    # ds = mdsmgr.build_dataset_from_categories(
-    #    ['arithmetic', 'polynomials'], 'train-easy')
-    # print("size", len(ds))
-
-    seed = 1
-    torch.manual_seed(seed)
-    device = torch.device("cpu")
-    if (torch.cuda.is_available()):
-        device = torch.device("cuda")
-        # torch.cuda.synchronize()
-
-    print("Device", device)
     exp_name = "math_easy_alge_l1d"
     unique_id = "11-21-19_1"
 
-    # ds = mdsmgr.build_dataset_from_module(
-    #    'algebra', 'linear_1d', 'train-easy')
-    # print("train-easy dataset size", len(ds))
-
-    # ds_interpolate = mdsmgr.build_dataset_from_module(
-        # 'algebra', 'linear_1d', 'interpolate'
-    # )
-
-    # print("interpolate dataset size", len(ds_interpolate))
-
-
-    # ds_train = mdsmgr.build_dataset_from_categories(
-        # ['arithmetic', 'polynomials'], 'train-easy')
-
-    # ds_train = mdsmgr.build_dataset_from_category(
-    #     'arithmetic', 'train-easy', max_elements=1000
-    # )
-    # ds_interpolate = mdsmgr.build_dataset_from_category(
-    #     'arithmetic', 'interpolate', max_elements=1000
-    # )
     ds_train = mdsmgr.build_dataset_from_module(
-        'algebra', 'linear_1d', 'train-easy'
+        'algebra', 'linear_1d', 'train-easy', max_elements=max_elements
     )
     ds_interpolate = mdsmgr.build_dataset_from_module(
-        'algebra', 'linear_1d', 'interpolate'
+        'algebra', 'linear_1d', 'interpolate', max_elements=max_elements
     )
 
     # ds_train = mdsmgr.build_dataset_from_level('train-easy')
@@ -101,15 +69,15 @@ if __name__ == '__main__':
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
-        train_ds, batch_size=64, shuffle=True, num_workers=16,
+        train_ds, batch_size=64, shuffle=True, num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn)
 
     val_loader = data.DataLoader(
-        val_ds, batch_size=64, shuffle=False, num_workers=16,
+        val_ds, batch_size=64, shuffle=False, num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn)
 
     interpolate_loader = data.DataLoader(
-        ds_interpolate, batch_size=64, shuffle=False, num_workers=16,
+        ds_interpolate, batch_size=64, shuffle=False, num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn)
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
