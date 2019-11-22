@@ -47,16 +47,16 @@ if __name__ == '__main__':
     #    ['arithmetic', 'polynomials'], 'train-easy')
     # print("size", len(ds))
 
-
     seed = 1
     torch.manual_seed(seed)
-    device = torch.device("cuda")
-    # device = torch.device("cpu")
-    print("device", device)
-    torch.cuda.synchronize()
+    device = torch.device("cpu")
+    if (torch.cuda.is_available()):
+        device = torch.device("cuda")
+        # torch.cuda.synchronize()
 
-    exp_name = "math_easy_arith"
-    unique_id = "11-24-19_1"
+    print("Device", device)
+    exp_name = "math_easy_alge_l1d"
+    unique_id = "11-21-19_1"
 
     # ds = mdsmgr.build_dataset_from_module(
     #    'algebra', 'linear_1d', 'train-easy')
