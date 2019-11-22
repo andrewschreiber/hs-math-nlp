@@ -58,7 +58,9 @@ def restore_checkpoint(filename, model=None, optimizer=None):
     return state
 
 
-def restore_best_checkpoint(prefix, path="./checkpoints", model=None, optimizer=None):
+def restore_best_checkpoint_from_prefix(
+    prefix, path="./checkpoints", model=None, optimizer=None
+):
     filename = Path(path) / f"{prefix}_best"
     return restore_checkpoint(filename, model, optimizer)
 

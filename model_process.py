@@ -65,7 +65,7 @@ def train_epoch(
 
     if tb is not None:
         tb.add_scalars(
-            {"loss_per_char": loss_per_char, "accuracy": accuracy,},
+            {"loss_per_char": loss_per_char, "accuracy": accuracy},
             group="train",
             sub_group="epoch",
             global_step=epoch,
@@ -108,7 +108,7 @@ def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100)
 
     if tb is not None:
         tb.add_scalars(
-            {"loss_per_char": loss_per_char, "accuracy": accuracy,},
+            {"loss_per_char": loss_per_char, "accuracy": accuracy},
             group="eval",
             sub_group="epoch",
             global_step=epoch,
@@ -153,7 +153,7 @@ def interpolate_epoch(
 
     if tb is not None:
         tb.add_scalars(
-            {"loss_per_char": loss_per_char, "accuracy": accuracy,},
+            {"loss_per_char": loss_per_char, "accuracy": accuracy},
             group="interpolate",
             sub_group="epoch",
             global_step=epoch,
