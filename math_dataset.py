@@ -27,11 +27,11 @@ def random_split_dataset(ds, split_rate):
     return train_ds, val_ds
 
 
-def np_encode_string(s, char0=ord(' ')):
+def np_encode_string(s, char0=ord(" ")):
     """converts a string into a numpy array of bytes
     (char0 - 1) is subtracted from all bytes values (0 is used for PAD)
     string is pre-pended with BOS and post-pended with EOS"""
-    chars = np.array(list(s), dtype='S1').view(np.uint8)
+    chars = np.array(list(s), dtype="S1").view(np.uint8)
     # normalize to 1 - 96, 0 being PAD
     chars = chars - char0 + 1
 
@@ -40,7 +40,7 @@ def np_encode_string(s, char0=ord(' ')):
     return chars
 
 
-def np_decode_string(chars, char0=ord(' ')):
+def np_decode_string(chars, char0=ord(" ")):
     """converts a numpy array of bytes into a UTF-8 string
     (char0 - 1) is added to all bytes values (0 is used for PAD)
     BOS/EOS are removed before utf-8 decoding"""
@@ -48,7 +48,7 @@ def np_decode_string(chars, char0=ord(' ')):
     chars = chars + char0 - 1
     chars = chars[:-1]
     chars = chars.tobytes()
-    s = chars.decode('UTF-8')
+    s = chars.decode("UTF-8")
     return s
 
 
@@ -68,21 +68,24 @@ class LazyFileMathDataset(data.Dataset):
             self.build_dataset()
             if log:
                 print(
-                    f"Initialized MathDataset with file {self.file} (category:{self.category}, module:{self.module}) containing {self.qas.shape[0]} pairs of questions/answers")
+                    f"Initialized MathDataset with file {self.file} (category:{self.category}, module:{self.module}) containing {self.qas.shape[0]} pairs of questions/answers"
+                )
         else:
             self.qas = None
             if log:
                 print(
-                    f"Initialized MathDataset with file {self.file} (category:{self.category}, module:{self.module}) in lazy mode")
+                    f"Initialized MathDataset with file {self.file} (category:{self.category}, module:{self.module}) in lazy mode"
+                )
 
     def _read_build_dataset(self):
-        self.df = pd.read_csv(self.file, header=None,
-                              sep='\n', names=['qa'], engine='c')
+        self.df = pd.read_csv(
+            self.file, header=None, sep="\n", names=["qa"], engine="c"
+        )
         self._build_dataset()
 
     def _build_dataset(self):
         if self.max_elements is not None:
-            self.df_max = self.df.iloc[0:self.max_elements*2]
+            self.df_max = self.df.iloc[0 : self.max_elements * 2]
         else:
             self.df_max = self.df
         self.questions = self.df_max[0::2]
@@ -105,8 +108,10 @@ class LazyFileMathDataset(data.Dataset):
             self._read_build_dataset()
         question, answer = self.qas.iloc[idx]
         return {
-            "q": question, "q_enc": np_encode_string(question),
-            "a": answer, "a_enc": np_encode_string(answer),
+            "q": question,
+            "q_enc": np_encode_string(question),
+            "a": answer,
+            "a_enc": np_encode_string(answer),
         }
 
     def __len__(self):
@@ -169,22 +174,25 @@ class MathDatasetManager(data.Dataset):
         self.dfs = {}
 
         for k, dir in self.dirs.items():
-            files = [ff for ff in glob.glob(
-                str(dir) + "/**/*.txt", recursive=True)]
+            files = [ff for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)]
             for f in files:
                 ds = LazyFileMathDataset(f, lazy_load=True, log=log)
                 if ds.category not in self.dfs:
                     self.dfs[ds.category] = {}
                 if ds.module not in self.dfs[ds.category]:
                     self.dfs[ds.category][ds.module] = {
-                        "easy": {}, "medium": {}, "hard": {},
-                        "interpolate": {}, "extrapolate": {}
+                        "easy": {},
+                        "medium": {},
+                        "hard": {},
+                        "interpolate": {},
+                        "extrapolate": {},
                     }
 
                 self.dfs[ds.category][ds.module][k] = ds
 
         print(
-            f"initialized MultiFilesMathDataset with categories {list(self.dfs.keys())} and types {list(self.dirs.keys())}")
+            f"initialized MultiFilesMathDataset with categories {list(self.dfs.keys())} and types {list(self.dirs.keys())}"
+        )
 
     def get_types(self):
         """retrieves all math typesfor this multi-file dataset"""
@@ -201,7 +209,7 @@ class MathDatasetManager(data.Dataset):
     def _build_datasets_from_category(self, category, typ, max_elements=None):
         ds = []
         for k, m in self.dfs[category].items():
-            if typ in m and hasattr(m[typ], 'set_max_elements'):
+            if typ in m and hasattr(m[typ], "set_max_elements"):
                 print(f"attempting to add module {category}/{k}/{typ}")
                 m[typ].set_max_elements(max_elements)
                 ds.append(m[typ])
@@ -212,7 +220,8 @@ class MathDatasetManager(data.Dataset):
         """Build a dataset for all modules in a category"""
         print(f"adding category {category}/../{typ}")
         ds = self._build_datasets_from_category(
-            category, typ, max_elements=max_elements)
+            category, typ, max_elements=max_elements
+        )
         return data.ConcatDataset(ds)
 
     def build_dataset_from_categories(self, categories, typ, max_elements=None):
@@ -220,8 +229,7 @@ class MathDatasetManager(data.Dataset):
         ds = []
         for c in categories:
             print(f"adding category.. {c}/../{typ}")
-            dss = self._build_datasets_from_category(
-                c, typ, max_elements=max_elements)
+            dss = self._build_datasets_from_category(c, typ, max_elements=max_elements)
             ds.extend(dss)
 
         return data.ConcatDataset(ds)
@@ -230,20 +238,36 @@ class MathDatasetManager(data.Dataset):
         """Builds the entire dataset"""
         ds = []
         for typ in ["train-easy", "train-medium", "train-hard"]:
-            for c in ["algebra", "numbers", "polynomials", "arithmetic", "measurement", "comparison", "probability", "calculus"]:
+            for c in [
+                "algebra",
+                "numbers",
+                "polynomials",
+                "arithmetic",
+                "measurement",
+                "comparison",
+                "probability",
+                "calculus",
+            ]:
                 print(f"adding category {c}/../{typ}")
-                dss = self._build_datasets_from_category(
-                    c, typ)
+                dss = self._build_datasets_from_category(c, typ)
                 ds.extend(dss)
         return data.ConcatDataset(ds)
 
     def build_dataset_from_level(self, level):
         """Builds the dataset for a level"""
         ds = []
-        for c in ["algebra", "numbers", "polynomials", "arithmetic", "measurement", "comparison", "probability", "calculus"]:
+        for c in [
+            "algebra",
+            "numbers",
+            "polynomials",
+            "arithmetic",
+            "measurement",
+            "comparison",
+            "probability",
+            "calculus",
+        ]:
             print(f"adding category {c}/../{level}")
-            dss = self._build_datasets_from_category(
-                c, level)
+            dss = self._build_datasets_from_category(c, level)
             ds.extend(dss)
         return data.ConcatDataset(ds)
 
@@ -262,7 +286,7 @@ class MathDatasetManager(data.Dataset):
 
 
 def question_answer_to_position_batch_collate_fn(qas):
-    ''' Gather + Pad the question/answer to the max seq length in batch '''
+    """ Gather + Pad the question/answer to the max seq length in batch """
 
     max_q_len = max(len(qa["q_enc"]) for qa in qas)
     max_a_len = max(len(qa["a_enc"]) for qa in qas)
@@ -271,18 +295,36 @@ def question_answer_to_position_batch_collate_fn(qas):
     batch_as = []
     batch_pos = []
     for qa in qas:
-        batch_qs.append(np.pad(qa["q_enc"], (0, max_q_len - len(qa["q_enc"])),
-                               mode='constant', constant_values=Constants.PAD))
-        batch_as.append(np.pad(qa["a_enc"], (0, max_a_len - len(qa["a_enc"])),
-                               mode='constant', constant_values=Constants.PAD))
+        batch_qs.append(
+            np.pad(
+                qa["q_enc"],
+                (0, max_q_len - len(qa["q_enc"])),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
+        batch_as.append(
+            np.pad(
+                qa["a_enc"],
+                (0, max_a_len - len(qa["a_enc"])),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
 
-    batch_qs_pos = np.array([
-        [pos_i+1 if w_i != Constants.PAD else 0
-         for pos_i, w_i in enumerate(q)] for q in batch_qs])
+    batch_qs_pos = np.array(
+        [
+            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(q)]
+            for q in batch_qs
+        ]
+    )
 
-    batch_as_pos = np.array([
-        [pos_i+1 if w_i != Constants.PAD else 0
-         for pos_i, w_i in enumerate(a)] for a in batch_as])
+    batch_as_pos = np.array(
+        [
+            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(a)]
+            for a in batch_as
+        ]
+    )
 
     batch_qs = torch.LongTensor(batch_qs)
     batch_qs_pos = torch.LongTensor(batch_qs_pos)
@@ -294,7 +336,7 @@ def question_answer_to_position_batch_collate_fn(qas):
 
 
 def question_answer_to_batch_collate_fn(qas):
-    ''' Gather + Pad the question/answer to the max seq length in batch '''
+    """ Gather + Pad the question/answer to the max seq length in batch """
 
     max_q_len = max(len(qa["q_enc"]) for qa in qas)
     max_a_len = max(len(qa["a_enc"]) for qa in qas)
@@ -303,10 +345,22 @@ def question_answer_to_batch_collate_fn(qas):
     batch_as = []
     batch_pos = []
     for qa in qas:
-        batch_qs.append(np.pad(qa["q_enc"], (0, max_q_len - len(qa["q_enc"])),
-                               mode='constant', constant_values=Constants.PAD))
-        batch_as.append(np.pad(qa["a_enc"], (0, max_a_len - len(qa["a_enc"])),
-                               mode='constant', constant_values=Constants.PAD))
+        batch_qs.append(
+            np.pad(
+                qa["q_enc"],
+                (0, max_q_len - len(qa["q_enc"])),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
+        batch_as.append(
+            np.pad(
+                qa["a_enc"],
+                (0, max_a_len - len(qa["a_enc"])),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
 
     batch_qs = torch.LongTensor(batch_qs)
     batch_as = torch.LongTensor(batch_as)
@@ -315,19 +369,28 @@ def question_answer_to_batch_collate_fn(qas):
 
 
 def question_to_position_batch_collate_fn(qs):
-    ''' Gather + Pad the question to the max seq length in batch '''
+    """ Gather + Pad the question to the max seq length in batch """
 
     max_q_len = max(len(q) for q in qs)
 
     batch_qs = []
     batch_pos = []
     for q in qs:
-        batch_qs.append(np.pad(q, (0, max_q_len - len(q)),
-                               mode='constant', constant_values=Constants.PAD))
+        batch_qs.append(
+            np.pad(
+                q,
+                (0, max_q_len - len(q)),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
 
-    batch_qs_pos = np.array([
-        [pos_i+1 if w_i != Constants.PAD else 0
-         for pos_i, w_i in enumerate(q)] for q in batch_qs])
+    batch_qs_pos = np.array(
+        [
+            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(q)]
+            for q in batch_qs
+        ]
+    )
 
     batch_qs = torch.LongTensor(batch_qs)
     batch_qs_pos = torch.LongTensor(batch_qs_pos)
