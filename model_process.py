@@ -4,10 +4,13 @@ from tqdm import tqdm  # tqdm_notebook as tqdm
 import numpy as np
 import torch
 from torch.utils import data
-import torch.nn.functional as F
+
+# import torch.nn.functional as F
 from transformer import Constants
 from transformer.Generator import Generator
-from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ, np_decode_string
+
+# from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ, np_decode_string
+from math_dataset import MAX_QUESTION_SZ, np_decode_string
 from loss import compute_performance
 from checkpoints import rotating_save_checkpoint, build_checkpoint
 from math_dataset import np_encode_string, question_to_position_batch_collate_fn
@@ -382,7 +385,7 @@ def predict_single(
     qs, qs_pos = qs.to(device), qs_pos.to(device)
 
     all_hyp, all_scores = generator.generate_batch(qs, qs_pos)
-    resp = np_decode_string(np.array(all_hyp[0][0]))
+    # resp = np_decode_string(np.array(all_hyp[0][0]))
 
     resps = []
     for i, idx_seqs in enumerate(all_hyp):

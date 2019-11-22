@@ -269,4 +269,3 @@ class Transformer(nn.Module):
         seq_logit = self.tgt_word_prj(dec_output) * self.x_logit_scale
 
         return seq_logit.view(-1, seq_logit.size(2))
-

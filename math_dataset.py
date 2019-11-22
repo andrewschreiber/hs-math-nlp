@@ -1,4 +1,4 @@
-import os
+# import os
 from pathlib import Path
 import glob
 import pandas as pd
@@ -85,7 +85,7 @@ class LazyFileMathDataset(data.Dataset):
 
     def _build_dataset(self):
         if self.max_elements is not None:
-            self.df_max = self.df.iloc[0 : self.max_elements * 2]
+            self.df_max = self.df.iloc[0: self.max_elements * 2]
         else:
             self.df_max = self.df
         self.questions = self.df_max[0::2]
@@ -293,7 +293,7 @@ def question_answer_to_position_batch_collate_fn(qas):
 
     batch_qs = []
     batch_as = []
-    batch_pos = []
+    # batch_pos = []
     for qa in qas:
         batch_qs.append(
             np.pad(
@@ -343,7 +343,7 @@ def question_answer_to_batch_collate_fn(qas):
 
     batch_qs = []
     batch_as = []
-    batch_pos = []
+    # batch_pos = []
     for qa in qas:
         batch_qs.append(
             np.pad(
@@ -374,7 +374,7 @@ def question_to_position_batch_collate_fn(qs):
     max_q_len = max(len(q) for q in qs)
 
     batch_qs = []
-    batch_pos = []
+    # batch_pos = []
     for q in qs:
         batch_qs.append(
             np.pad(
