@@ -72,11 +72,17 @@ if __name__ == '__main__':
     # ds_train = mdsmgr.build_dataset_from_categories(
         # ['arithmetic', 'polynomials'], 'train-easy')
 
-    ds_train = mdsmgr.build_dataset_from_category(
-        'arithmetic', 'train-easy', max_elements=1000
+    # ds_train = mdsmgr.build_dataset_from_category(
+    #     'arithmetic', 'train-easy', max_elements=1000
+    # )
+    # ds_interpolate = mdsmgr.build_dataset_from_category(
+    #     'arithmetic', 'interpolate', max_elements=1000
+    # )
+    ds_train = mdsmgr.build_dataset_from_module(
+        'algebra', 'linear_1d', 'train-easy'
     )
-    ds_interpolate = mdsmgr.build_dataset_from_category(
-        'arithmetic', 'interpolate', max_elements=1000
+    ds_interpolate = mdsmgr.build_dataset_from_module(
+        'algebra', 'linear_1d', 'interpolate'
     )
 
     # ds_train = mdsmgr.build_dataset_from_level('train-easy')
