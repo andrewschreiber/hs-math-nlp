@@ -7,6 +7,9 @@ import numpy as np
 import torch
 from torch.utils import data
 from transformer import Constants
+from torch.utils.data.dataset import Subset
+from torch._utils import _accumulate
+
 
 # Math Dataset constants (from paper)
 
@@ -19,12 +22,24 @@ MAX_ANSWER_SZ = 30
 
 
 def random_split_dataset(ds, split_rate):
-    """uses Torch utils to split and randomize data into train/val dataset"""
+    """uses Torch utils to split and randomize data into train/val datasets"""
     size = len(ds)
     train_split = int(size * split_rate)
     val_split = size - train_split
     train_ds, val_ds = data.random_split(ds, [train_split, val_split])
     return train_ds, val_ds
+
+
+def deterministic_split_dataset(ds, split_rate):
+    """ Split data consistently into train/val datasets"""
+    size = len(ds)
+    train_split = int(size * split_rate)
+    val_split = size - train_split
+
+    lengths = [train_split, val_split]
+    indices = sum(lengths).tolist()
+    
+    return [Subset(ds, indices[offset - length:offset]) for offset, length in zip(_accumulate(lengths), lengths)]
 
 
 def np_encode_string(s, char0=ord(" ")):
@@ -85,7 +100,7 @@ class LazyFileMathDataset(data.Dataset):
 
     def _build_dataset(self):
         if self.max_elements is not None:
-            self.df_max = self.df.iloc[0: self.max_elements * 2]
+            self.df_max = self.df.iloc[0 : self.max_elements * 2]
         else:
             self.df_max = self.df
         self.questions = self.df_max[0::2]
