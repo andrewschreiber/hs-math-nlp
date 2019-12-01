@@ -59,6 +59,11 @@ if __name__ == "__main__":
     exp_name = "math_easy_alge_l1d"
     unique_id = "11-24-19_1"
 
+    # TODO: Figure out how to load the entire dataset
+
+    # ds_train_full = mdsmgr.build_dataset_full(max_elements=max_elements)
+    # ds_interpolate_full = mdsmgr.build_dataset_
+
     ds_train = mdsmgr.build_dataset_from_module(
         "algebra", "linear_1d", "train-easy", max_elements=max_elements
     )

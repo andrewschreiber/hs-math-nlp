@@ -38,8 +38,11 @@ def deterministic_split_dataset(ds, split_rate):
 
     lengths = [train_split, val_split]
     indices = sum(lengths).tolist()
-    
-    return [Subset(ds, indices[offset - length:offset]) for offset, length in zip(_accumulate(lengths), lengths)]
+
+    return [
+        Subset(ds, indices[offset - length : offset])
+        for offset, length in zip(_accumulate(lengths), lengths)
+    ]
 
 
 def np_encode_string(s, char0=ord(" ")):
