@@ -5,13 +5,12 @@ import utils
 import model_process
 import random
 from math_dataset import (
-    # random_split_dataset,
+    random_split_dataset,
     question_answer_to_position_batch_collate_fn,
+    MathDatasetManager,
 )
 
 # from transformer.Models import Transformer
-from math_dataset import MathDatasetManager
-import math_dataset
 import torch.optim as optim
 from torch.utils import data
 import torch
@@ -80,7 +79,7 @@ if __name__ == "__main__":
 
     # here we split data in 90/10% for train/validation and use interpolate for test
 
-    train_ds, val_ds = math_dataset.random_split_dataset(ds_train, split_rate=0.9)
+    train_ds, val_ds = random_split_dataset(ds_train, split_rate=0.9)
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(

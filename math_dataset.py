@@ -112,6 +112,24 @@ class LazyFileMathDataset(data.Dataset):
         self.answers = self.df_max[1::2]
         self.answers.reset_index(inplace=True, drop=True)
         self.answers.rename(columns={"qa": "answers"}, inplace=True)
+
+        # Something like
+        # Instead of a single dataset, you have an array of pandas datasets, one from each file .
+        # So you just append the contents of each question and answer array.
+        # The final 'qas' is the same.
+        # OR alternatively, combining the output of pd.concats.
+        # not sure why this isn't working to begin with
+        # I guess it's using torch.data.ConcatDataset instead of something pandas?
+        # I think what you'll need to do is just iterate over the LFMDs and get the ds.qas from each
+        # so like
+        # full_df = pd.DataFrame()
+        # for category, modules in self.dfs.items():
+        #   for module in modules:
+        #       for typ, ds in module.items():
+        #           if ["train-easy", "train-medium","train-hard"].contains(typ)
+        #               full_df.append(ds.qas)
+        # return
+
         self.qas = pd.concat([self.questions, self.answers], axis=1)
 
     def set_max_elements(self, max_elements):
@@ -123,7 +141,8 @@ class LazyFileMathDataset(data.Dataset):
 
     def __getitem__(self, idx):
         if self.qas is None:
-            self._read_build_dataset()
+            raise ValueError("qas is none in __getitem__")
+            # self._read_build_dataset()
         question, answer = self.qas.iloc[idx]
         return {
             "q": question,
@@ -134,11 +153,12 @@ class LazyFileMathDataset(data.Dataset):
 
     def __len__(self):
         if self.qas is None:
-            self._read_build_dataset()
+            raise ValueError("qas is none in __len__")
+            # self._read_build_dataset()
         return self.qas.shape[0]
 
 
-class MathDatasetManager(data.Dataset):
+class MathDatasetManager:
     """A Math Dataset manager starting at root directory (like v1.0) to extract files and build torch datasets
     in a lazy loading and streamed way based on specific types/categories/modules presented in paper.
 
@@ -198,10 +218,14 @@ class MathDatasetManager(data.Dataset):
                 if ds.category not in self.dfs:
                     self.dfs[ds.category] = {}
                 if ds.module not in self.dfs[ds.category]:
+                    print("Not in")
+                    print(ds.category)
+                    print(ds.module)
+                    print(self.dfs[ds.category])
                     self.dfs[ds.category][ds.module] = {
-                        "easy": {},
-                        "medium": {},
-                        "hard": {},
+                        "train-easy": {},
+                        "train-medium": {},
+                        "train-hard": {},
                         "interpolate": {},
                         "extrapolate": {},
                     }
@@ -303,6 +327,58 @@ class MathDatasetManager(data.Dataset):
         return data.ConcatDataset(ds)
 
 
+class FullDatasetManager(data.Dataset):
+    def __init__(self, root_dir, max_elements=None):
+        self.root_dir = Path(root_dir)
+
+        self.dirs = {
+            "train-easy": self.root_dir / "train-easy",
+            "train-medium": self.root_dir / "train-medium",
+            "train-hard": self.root_dir / "train-hard",
+        }
+
+        self.dfs = {}
+        self.full_df = pd.DataFrame()
+
+        for key, dir in self.dirs.items():
+            files = [ff for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)]
+            for f in files:
+                df = pd.read_csv(f, header=None, sep="\n", names=["qa"], engine="c")
+                if max_elements is not None:
+                    df_max = df.iloc[0 : self.max_elements * 2]
+                else:
+                    df_max = df
+                questions = df_max[0::2]
+                questions.reset_index(inplace=True, drop=True)
+                questions.rename(columns={"qa": "questions"}, inplace=True)
+                answers = self.df_max[1::2]
+                answers.reset_index(inplace=True, drop=True)
+                answers.rename(columns={"qa": "answers"}, inplace=True)
+                qas = pd.concat([self.questions, self.answers], axis=1)
+                self.full_df.append(qas)
+
+        print(f"Initialized full training dataset of types {list(self.dirs.keys())}")
+
+    def __getitem__(self, idx):
+        if self.full_df is None:
+            raise ValueError("full_df is none in __getitem__")
+            # self._read_build_dataset()
+        question, answer = self.full_df.iloc[idx]
+        return {
+            "q": question,
+            "q_enc": np_encode_string(question),
+            "a": answer,
+            "a_enc": np_encode_string(answer),
+        }
+
+    def __len__(self):
+        if self.full_df is None:
+            raise ValueError("full_df is none in __len__")
+            # self._read_build_dataset()
+        return self.full_df.shape[0]
+
+
+# Core collate function
 def question_answer_to_position_batch_collate_fn(qas):
     """ Gather + Pad the question/answer to the max seq length in batch """
 
@@ -353,37 +429,37 @@ def question_answer_to_position_batch_collate_fn(qas):
     return batch_qs, batch_qs_pos, batch_as, batch_as_pos
 
 
-def question_answer_to_batch_collate_fn(qas):
-    """ Gather + Pad the question/answer to the max seq length in batch """
+# def question_answer_to_batch_collate_fn(qas):
+#     """ Gather + Pad the question/answer to the max seq length in batch """
 
-    max_q_len = max(len(qa["q_enc"]) for qa in qas)
-    max_a_len = max(len(qa["a_enc"]) for qa in qas)
+#     max_q_len = max(len(qa["q_enc"]) for qa in qas)
+#     max_a_len = max(len(qa["a_enc"]) for qa in qas)
 
-    batch_qs = []
-    batch_as = []
-    # batch_pos = []
-    for qa in qas:
-        batch_qs.append(
-            np.pad(
-                qa["q_enc"],
-                (0, max_q_len - len(qa["q_enc"])),
-                mode="constant",
-                constant_values=Constants.PAD,
-            )
-        )
-        batch_as.append(
-            np.pad(
-                qa["a_enc"],
-                (0, max_a_len - len(qa["a_enc"])),
-                mode="constant",
-                constant_values=Constants.PAD,
-            )
-        )
+#     batch_qs = []
+#     batch_as = []
+#     # batch_pos = []
+#     for qa in qas:
+#         batch_qs.append(
+#             np.pad(
+#                 qa["q_enc"],
+#                 (0, max_q_len - len(qa["q_enc"])),
+#                 mode="constant",
+#                 constant_values=Constants.PAD,
+#             )
+#         )
+#         batch_as.append(
+#             np.pad(
+#                 qa["a_enc"],
+#                 (0, max_a_len - len(qa["a_enc"])),
+#                 mode="constant",
+#                 constant_values=Constants.PAD,
+#             )
+#         )
 
-    batch_qs = torch.LongTensor(batch_qs)
-    batch_as = torch.LongTensor(batch_as)
+#     batch_qs = torch.LongTensor(batch_qs)
+#     batch_as = torch.LongTensor(batch_as)
 
-    return batch_qs, batch_as
+#     return batch_qs, batch_as
 
 
 def question_to_position_batch_collate_fn(qs):
