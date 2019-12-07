@@ -2,6 +2,7 @@
 from pathlib import Path
 import glob
 import pandas as pd
+import time
 
 import numpy as np
 import torch
@@ -218,10 +219,6 @@ class MathDatasetManager:
                 if ds.category not in self.dfs:
                     self.dfs[ds.category] = {}
                 if ds.module not in self.dfs[ds.category]:
-                    print("Not in")
-                    print(ds.category)
-                    print(ds.module)
-                    print(self.dfs[ds.category])
                     self.dfs[ds.category][ds.module] = {
                         "train-easy": {},
                         "train-medium": {},
@@ -330,6 +327,7 @@ class MathDatasetManager:
 class FullDatasetManager(data.Dataset):
     def __init__(self, root_dir, max_elements=None):
         self.root_dir = Path(root_dir)
+        self.full_df = None
 
         self.dirs = {
             "train-easy": self.root_dir / "train-easy",
@@ -337,32 +335,47 @@ class FullDatasetManager(data.Dataset):
             "train-hard": self.root_dir / "train-hard",
         }
 
-        self.dfs = {}
-        self.full_df = pd.DataFrame()
-
+        print(f"Loading training data with max_elements: {max_elements}")
+        start = time.time()
+        all_questions = []
+        all_answers = []
         for key, dir in self.dirs.items():
             files = [ff for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)]
-            for f in files:
-                df = pd.read_csv(f, header=None, sep="\n", names=["qa"], engine="c")
-                if max_elements is not None:
-                    df_max = df.iloc[0 : self.max_elements * 2]
-                else:
-                    df_max = df
-                questions = df_max[0::2]
-                questions.reset_index(inplace=True, drop=True)
-                questions.rename(columns={"qa": "questions"}, inplace=True)
-                answers = self.df_max[1::2]
-                answers.reset_index(inplace=True, drop=True)
-                answers.rename(columns={"qa": "answers"}, inplace=True)
-                qas = pd.concat([self.questions, self.answers], axis=1)
-                self.full_df.append(qas)
 
-        print(f"Initialized full training dataset of types {list(self.dirs.keys())}")
+            for f in files:
+                questions, answers = self._getQuestionsAnswersFromFile(
+                    f, max_elements=max_elements
+                )
+                all_questions.extend(questions)
+                all_answers.extend(answers)
+
+        self.full_df = pd.DataFrame(
+            list(zip(all_questions, all_answers)), columns=["questions", "answers"]
+        )
+
+        print(
+            f"Took {time.time() - start} seconds to initialize full dataset of length {len(all_questions)}"
+        )
+
+    def _getQuestionsAnswersFromFile(self, filepath, max_elements=None):
+        count = 0
+        with open(filepath) as datafile:
+            questions = []
+            answers = []
+            for line in datafile:
+                line = line.rstrip("\n")
+                if max_elements is not None and count == (2 * max_elements):
+                    return questions, answers
+                if count % 2 == 0:
+                    questions.append(line)
+                else:
+                    answers.append(line)
+                count += 1
+            return questions, answers
 
     def __getitem__(self, idx):
         if self.full_df is None:
             raise ValueError("full_df is none in __getitem__")
-            # self._read_build_dataset()
         question, answer = self.full_df.iloc[idx]
         return {
             "q": question,
@@ -374,7 +387,6 @@ class FullDatasetManager(data.Dataset):
     def __len__(self):
         if self.full_df is None:
             raise ValueError("full_df is none in __len__")
-            # self._read_build_dataset()
         return self.full_df.shape[0]
 
 
