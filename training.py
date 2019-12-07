@@ -8,6 +8,7 @@ from math_dataset import (
     random_split_dataset,
     question_answer_to_position_batch_collate_fn,
     MathDatasetManager,
+    FullDatasetManager,
 )
 
 # from transformer.Models import Transformer
@@ -27,7 +28,7 @@ if __name__ == "__main__":
         multiprocessing.set_start_method("spawn", True)
         device = torch.device("cpu")
         num_workers = 4
-        max_elements = 150
+        max_elements = 5
     else:
         device = torch.device("cuda")
         num_workers = 16
@@ -51,21 +52,22 @@ if __name__ == "__main__":
 
     mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
 
-    print("types", list(mdsmgr.get_types()))
-    print("categories", list(mdsmgr.get_categories()))
-    print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
+    ds_train = FullDatasetManager(
+        "./mathematics_dataset-v1.0", max_elements=max_elements
+    )
+
+    # print("types", list(mdsmgr.get_types()))
+    # print("categories", list(mdsmgr.get_categories()))
+    # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_easy_alge_l1d"
     unique_id = "11-24-19_1"
 
     # TODO: Figure out how to load the entire dataset
 
-    # ds_train_full = mdsmgr.build_dataset_full(max_elements=max_elements)
-    # ds_interpolate_full = mdsmgr.build_dataset_
-
-    ds_train = mdsmgr.build_dataset_from_module(
-        "algebra", "linear_1d", "train-easy", max_elements=max_elements
-    )
+    # ds_train = mdsmgr.build_dataset_from_module(
+    #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
+    # )
     ds_interpolate = mdsmgr.build_dataset_from_module(
         "algebra", "linear_1d", "interpolate", max_elements=max_elements
     )
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
         train_ds,
-        batch_size=64,
+        batch_size=128,
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
@@ -92,7 +94,7 @@ if __name__ == "__main__":
 
     val_loader = data.DataLoader(
         val_ds,
-        batch_size=64,
+        batch_size=128,
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
@@ -100,7 +102,7 @@ if __name__ == "__main__":
 
     interpolate_loader = data.DataLoader(
         ds_interpolate,
-        batch_size=64,
+        batch_size=128,
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
