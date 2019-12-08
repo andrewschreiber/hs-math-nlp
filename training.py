@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # Paper calls for batch size of 1024, but don't have the vRAM
     # They use 8 P100s (16gb each) for 500k batches
-    batch_size = 64
+    batch_size = 256
     print("Batch size:", batch_size)
 
     deterministic = True
