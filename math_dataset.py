@@ -341,7 +341,6 @@ class FullDatasetManager(data.Dataset):
         start = time.time()
         all_questions = []
         all_answers = []
-        # for key, dir in self.dirs.items():
         files = [
             ff
             for key, dir in self.dirs.items()

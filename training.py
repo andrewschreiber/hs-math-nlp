@@ -32,7 +32,10 @@ if __name__ == "__main__":
     else:
         device = torch.device("cuda")
         num_workers = 16
-        max_elements = None
+        # Paper says 2m datapoints, but dataset repo contains 112m
+        # Limit elements to paper
+        # 112m/2m = 56. Elements per file => 66666/56 = ~1190
+        max_elements = 1190
 
     print("Device:", device)
 
