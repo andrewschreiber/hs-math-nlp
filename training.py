@@ -35,8 +35,7 @@ if __name__ == "__main__":
         # Paper says 2m datapoints, but dataset repo contains 112m
         # Limit elements to paper
         # 11.2m/2m = 5.6. Elements per file => 66666/5.6 = ~11904
-        # max_elements = 11904
-        max_elements = None
+        max_elements = 11904
 
     print("Device:", device)
 
