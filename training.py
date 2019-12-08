@@ -86,7 +86,7 @@ if __name__ == "__main__":
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
         train_ds,
-        batch_size=1024,
+        batch_size=64,
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     val_loader = data.DataLoader(
         val_ds,
-        batch_size=1024,
+        batch_size=64,
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
