@@ -69,7 +69,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_full"
-    unique_id = "12-7-19_bs256"
+    unique_id = "12-7-19_bs128"
 
     # TODO: Figure out how to load the entire dataset
 
