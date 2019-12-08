@@ -39,8 +39,10 @@ if __name__ == "__main__":
 
     print("Device:", device)
 
-    batch_size = 64
-    print("Batch_size: ", batch_size)
+    # Paper calls for batch size of 1024, but don't have the vRAM
+    # They use 8 P100s (16gb each) for 500k batches
+    batch_size = 128
+    print("Batch size:", batch_size)
 
     deterministic = True
     if deterministic:
