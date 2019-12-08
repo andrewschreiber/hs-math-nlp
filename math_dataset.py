@@ -17,9 +17,9 @@ from torch._utils import _accumulate
 # input chars are selected from basic ASCII chars
 VOCAB_SZ = 95
 # questions have less than 160 chars
-MAX_QUESTION_SZ = 160
+MAX_QUESTION_SZ = 162
 # answers have less than 30 chars
-MAX_ANSWER_SZ = 30
+MAX_ANSWER_SZ = 32
 
 
 def random_split_dataset(ds, split_rate):

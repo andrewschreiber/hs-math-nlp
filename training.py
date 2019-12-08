@@ -28,7 +28,7 @@ if __name__ == "__main__":
         multiprocessing.set_start_method("spawn", True)
         device = torch.device("cpu")
         num_workers = 4
-        max_elements = 5
+        max_elements = 2
     else:
         device = torch.device("cuda")
         num_workers = 16
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     print("Deterministic", deterministic)
 
-    mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
+    # mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
 
     ds_train = FullDatasetManager(
         "./mathematics_dataset-v1.0", max_elements=max_elements
@@ -68,12 +68,12 @@ if __name__ == "__main__":
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
     # )
-    ds_interpolate = mdsmgr.build_dataset_from_module(
-        "algebra", "linear_1d", "interpolate", max_elements=max_elements
-    )
+    # ds_interpolate = mdsmgr.build_dataset_from_module(
+    #     "algebra", "linear_1d", "interpolate", max_elements=max_elements
+    # )
 
     print("Train dataset size", len(ds_train))
-    print("Interpolate dataset size", len(ds_interpolate))
+    # print("Interpolate dataset size", len(ds_interpolate))
 
     model = utils.build_transformer()
 
@@ -100,13 +100,13 @@ if __name__ == "__main__":
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
 
-    interpolate_loader = data.DataLoader(
-        ds_interpolate,
-        batch_size=128,
-        shuffle=False,
-        num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
-    )
+    # interpolate_loader = data.DataLoader(
+    #     ds_interpolate,
+    #     batch_size=128,
+    #     shuffle=False,
+    #     num_workers=num_workers,
+    #     collate_fn=question_answer_to_position_batch_collate_fn,
+    # )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         model,
         train_loader,
         val_loader,
-        interpolate_loader,
+        # interpolate_loader,
         optimizer,
         device,
         epochs=5000,

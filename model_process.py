@@ -168,14 +168,13 @@ def train(
     model,
     training_data,
     validation_data,
-    interpolate_data,
     optimizer,
     device,
     epochs,
-    interpolate_loader=None,
     tb=None,
     log_interval=100,
     interpolate_interval=1,
+    interpolate_data=None,
     start_epoch=0,
     best_valid_accu=0.0,
     best_valid_loss=float("Inf"),
@@ -235,7 +234,7 @@ def train(
                 nb=5,
             )
 
-        if epoch_i % interpolate_interval == 0:
+        if interpolate_data is not None and epoch_i % interpolate_interval == 0:
             start = time.time()
             interpolate_loss, interpolate_accu = interpolate_epoch(
                 model, interpolate_data, device, epoch_i, tb, log_interval
