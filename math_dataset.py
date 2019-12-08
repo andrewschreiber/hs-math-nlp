@@ -341,22 +341,20 @@ class FullDatasetManager(data.Dataset):
         start = time.time()
         all_questions = []
         all_answers = []
-        for key, dir in self.dirs.items():
-            files = [ff for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)]
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                for questions, answers in executor.map(
-                    self._getQuestionsAnswersFromFile, files
-                ):
-                    all_questions.extend(questions)
-                    all_answers.extend(answers)
-                    print(f"{len(all_questions)}")
-
-            # for f in files:
-            #     questions, answers = self._getQuestionsAnswersFromFile(
-            #         f
-            #     )
-            #     all_questions.extend(questions)
-            #     all_answers.extend(answers)
+        # for key, dir in self.dirs.items():
+        files = [
+            ff
+            for key, dir in self.dirs.items()
+            for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)
+        ]
+        print(f"File count: {len(files)}")
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for questions, answers in executor.map(
+                self._getQuestionsAnswersFromFile, files
+            ):
+                all_questions.extend(questions)
+                all_answers.extend(answers)
+                # print(f"{len(all_questions)}")
 
         self.full_df = pd.DataFrame(
             list(zip(all_questions, all_answers)), columns=["questions", "answers"]
@@ -368,7 +366,6 @@ class FullDatasetManager(data.Dataset):
 
     def _getQuestionsAnswersFromFile(self, filepath):
         count = 0
-        print(filepath)
         with open(filepath) as datafile:
             questions = []
             answers = []
@@ -381,6 +378,7 @@ class FullDatasetManager(data.Dataset):
                 else:
                     answers.append(line)
                 count += 1
+            print(f"{len(questions)} questions in {filepath}")
             return questions, answers
 
     def __getitem__(self, idx):
