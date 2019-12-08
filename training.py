@@ -32,7 +32,7 @@ if __name__ == "__main__":
     else:
         device = torch.device("cuda")
         num_workers = 16
-        max_elements = 250
+        max_elements = None
 
     print("Device", device)
 
