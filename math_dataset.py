@@ -11,6 +11,7 @@ from transformer import Constants
 from torch.utils.data.dataset import Subset
 from torch._utils import _accumulate
 
+import concurrent.futures
 
 # Math Dataset constants (from paper)
 
@@ -328,6 +329,7 @@ class FullDatasetManager(data.Dataset):
     def __init__(self, root_dir, max_elements=None):
         self.root_dir = Path(root_dir)
         self.full_df = None
+        self.max_elements = max_elements
 
         self.dirs = {
             "train-easy": self.root_dir / "train-easy",
@@ -335,19 +337,25 @@ class FullDatasetManager(data.Dataset):
             "train-hard": self.root_dir / "train-hard",
         }
 
-        print(f"Loading training data with max_elements: {max_elements}")
+        print(f"Loading training data with max_elements: {self.max_elements}")
         start = time.time()
         all_questions = []
         all_answers = []
         for key, dir in self.dirs.items():
             files = [ff for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)]
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                for questions, answers in executor.map(
+                    self._getQuestionsAnswersFromFile, files
+                ):
+                    all_questions.extend(questions)
+                    all_answers.extend(answers)
 
-            for f in files:
-                questions, answers = self._getQuestionsAnswersFromFile(
-                    f, max_elements=max_elements
-                )
-                all_questions.extend(questions)
-                all_answers.extend(answers)
+            # for f in files:
+            #     questions, answers = self._getQuestionsAnswersFromFile(
+            #         f
+            #     )
+            #     all_questions.extend(questions)
+            #     all_answers.extend(answers)
 
         self.full_df = pd.DataFrame(
             list(zip(all_questions, all_answers)), columns=["questions", "answers"]
@@ -357,14 +365,14 @@ class FullDatasetManager(data.Dataset):
             f"Took {time.time() - start} seconds to initialize full dataset of length {len(all_questions)}"
         )
 
-    def _getQuestionsAnswersFromFile(self, filepath, max_elements=None):
+    def _getQuestionsAnswersFromFile(self, filepath):
         count = 0
         with open(filepath) as datafile:
             questions = []
             answers = []
             for line in datafile:
                 line = line.rstrip("\n")
-                if max_elements is not None and count == (2 * max_elements):
+                if self.max_elements is not None and count == (2 * self.max_elements):
                     return questions, answers
                 if count % 2 == 0:
                     questions.append(line)

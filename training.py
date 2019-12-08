@@ -34,7 +34,10 @@ if __name__ == "__main__":
         num_workers = 16
         max_elements = None
 
-    print("Device", device)
+    print("Device:", device)
+
+    batch_size = 64
+    print("Batch_size: ", batch_size)
 
     deterministic = True
     if deterministic:
@@ -48,7 +51,7 @@ if __name__ == "__main__":
         torch.backends.cudnn.benchmark = False
     shuffle = not deterministic
 
-    print("Deterministic", deterministic)
+    print("Deterministic:", deterministic)
 
     # mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
 
@@ -86,7 +89,7 @@ if __name__ == "__main__":
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
         train_ds,
-        batch_size=64,
+        batch_size=batch_size,
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
@@ -94,7 +97,7 @@ if __name__ == "__main__":
 
     val_loader = data.DataLoader(
         val_ds,
-        batch_size=64,
+        batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
