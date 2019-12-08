@@ -34,14 +34,14 @@ if __name__ == "__main__":
         num_workers = 16
         # Paper says 2m datapoints, but dataset repo contains 112m
         # Limit elements to paper
-        # 112m/2m = 56. Elements per file => 66666/56 = ~1190
-        max_elements = 1190
+        # 11.2m/2m = 5.6. Elements per file => 66666/5.6 = ~11904
+        max_elements = 11904
 
     print("Device:", device)
 
     # Paper calls for batch size of 1024, but don't have the vRAM
     # They use 8 P100s (16gb each) for 500k batches
-    batch_size = 256
+    batch_size = 128
     print("Batch size:", batch_size)
 
     deterministic = True

@@ -339,8 +339,9 @@ class FullDatasetManager(data.Dataset):
 
         print(f"Loading training data with max_elements: {self.max_elements}")
         start = time.time()
-        all_questions = []
-        all_answers = []
+        data = {"questions": [], "answers": []}
+        # all_questions = []
+        # all_answers = []
         files = [
             ff
             for key, dir in self.dirs.items()
@@ -351,16 +352,13 @@ class FullDatasetManager(data.Dataset):
             for questions, answers in executor.map(
                 self._getQuestionsAnswersFromFile, files
             ):
-                all_questions.extend(questions)
-                all_answers.extend(answers)
-                # print(f"{len(all_questions)}")
+                data["questions"].extend(questions)
+                data["answers"].extend(answers)
 
-        self.full_df = pd.DataFrame(
-            list(zip(all_questions, all_answers)), columns=["questions", "answers"]
-        )
+        self.full_df = pd.DataFrame(data)
 
         print(
-            f"Took {time.time() - start} seconds to initialize full dataset of length {len(all_questions)}"
+            f"Took {time.time() - start} seconds to initialize full dataset of length {self.full_df.shape[0]}"
         )
 
     def _getQuestionsAnswersFromFile(self, filepath):
@@ -406,7 +404,6 @@ def question_answer_to_position_batch_collate_fn(qas):
 
     batch_qs = []
     batch_as = []
-    # batch_pos = []
     for qa in qas:
         batch_qs.append(
             np.pad(
@@ -487,7 +484,6 @@ def question_to_position_batch_collate_fn(qs):
     max_q_len = max(len(q) for q in qs)
 
     batch_qs = []
-    # batch_pos = []
     for q in qs:
         batch_qs.append(
             np.pad(
