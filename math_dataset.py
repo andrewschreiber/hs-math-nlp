@@ -349,6 +349,7 @@ class FullDatasetManager(data.Dataset):
                 ):
                     all_questions.extend(questions)
                     all_answers.extend(answers)
+                    print(f"{len(all_questions)}")
 
             # for f in files:
             #     questions, answers = self._getQuestionsAnswersFromFile(
@@ -367,6 +368,7 @@ class FullDatasetManager(data.Dataset):
 
     def _getQuestionsAnswersFromFile(self, filepath):
         count = 0
+        print(filepath)
         with open(filepath) as datafile:
             questions = []
             answers = []
