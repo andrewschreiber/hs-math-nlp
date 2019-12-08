@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # Paper calls for batch size of 1024, but don't have the vRAM
     # They use 8 P100s (16gb each) for 500k batches
-    batch_size = 128
+    batch_size = 64
     print("Batch size:", batch_size)
 
     deterministic = True
@@ -68,8 +68,8 @@ if __name__ == "__main__":
     # print("categories", list(mdsmgr.get_categories()))
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
-    exp_name = "math_easy_alge_l1d"
-    unique_id = "11-24-19_1"
+    exp_name = "math_full"
+    unique_id = "12-7-19_bs64"
 
     # TODO: Figure out how to load the entire dataset
 
