@@ -1,5 +1,10 @@
 # Reproduction of 'Analysing Mathematical Reasoning Abilities of Neural Models' Saxton et. al. 2019
 
+## Colaborators 
+
+- Andrew Schreiber 
+- Taylor Kulp-McDowall
+
 ## Links
 
 - Arxiv paper: https://arxiv.org/abs/1904.01557
