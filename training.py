@@ -16,6 +16,8 @@ import torch.optim as optim
 from torch.utils import data
 import torch
 
+import torch.nn as nn
+
 import numpy as np
 import os
 
@@ -41,7 +43,10 @@ if __name__ == "__main__":
 
     # Paper calls for batch size of 1024, but don't have the vRAM
     # They use 8 P100s (16gb each) for 500k batches
-    batch_size = 128
+    if torch.cuda.device_count() > 1:
+        batch_size = 1024
+    else:
+        batch_size = 128
     print("Batch size:", batch_size)
 
     deterministic = True
@@ -117,6 +122,11 @@ if __name__ == "__main__":
     # )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
+
+    if torch.cuda.device_count() > 1:
+        print("Using", torch.cuda.device_count(), "GPUs!")
+        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+        model = nn.DataParallel(model)
 
     model = model.to(device)
 
