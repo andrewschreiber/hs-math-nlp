@@ -33,18 +33,25 @@ if __name__ == "__main__":
     else:
         device = torch.device("cuda")
         num_workers = 16
-        # Paper says 2m datapoints, but dataset repo contains 112m
-        # Limit elements to paper
-        # 11.2m/2m = 5.6. Elements per file => 66666/5.6 = ~11904
+
+        # 666666 datapoints per difficulty file
+        # 3 difficulties/module -> 2m datapoints/module
+        # 56 modules
+        # Total dataset of 112m
+        # 224m rows (1 row per questions, 1 row per answer)
+
+        # max_elements *per file*
         max_elements = None
 
     print("Device:", device)
 
-    # Paper calls for batch size of 1024, but don't have the vRAM
-    # They use 8 P100s (16gb each) for 500k batches
+    # Paper calls for batch size of 1024
+    # They use 8 P100s (16gb VRAM each) for 500k batches
     if torch.cuda.device_count() > 1:
+        # Uses somewhere between 80-90GB VRAM
         batch_size = 1024
     else:
+        # Uses ~10 GB VRAM
         batch_size = 128
     print("Batch size:", batch_size)
 
@@ -124,7 +131,6 @@ if __name__ == "__main__":
 
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")
-        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
         model = nn.DataParallel(model)
 
     model = model.to(device)
