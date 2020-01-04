@@ -39,7 +39,6 @@ if __name__ == "__main__":
         # 56 modules
         # Total dataset of 112m
         # 224m rows (1 row per questions, 1 row per answer)
-
         # max_elements *per file*
         max_elements = None
 
@@ -74,13 +73,15 @@ if __name__ == "__main__":
     ds_train = FullDatasetManager(
         "./mathematics_dataset-v1.0", max_elements=max_elements
     )
+    # one of the options here is to type comments so fast that she has to listen and so on and so forth.
+    #
 
     # print("types", list(mdsmgr.get_types()))
     # print("categories", list(mdsmgr.get_categories()))
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
-    exp_name = "math_full"
-    unique_id = "12-7-19_bs128"
+    exp_name = "math_full112m"
+    unique_id = "1-3-20_bs128"
 
     # TODO: Figure out how to load the entire dataset
 
