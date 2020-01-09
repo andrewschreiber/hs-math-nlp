@@ -80,10 +80,8 @@ if __name__ == "__main__":
     # print("categories", list(mdsmgr.get_categories()))
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
-    exp_name = "math_full112m"
-    unique_id = "1-3-20_bs128"
-
-    # TODO: Figure out how to load the entire dataset
+    exp_name = "math_full112m_"
+    unique_id = "1-8-20_bs128"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
@@ -103,6 +101,7 @@ if __name__ == "__main__":
 
     train_ds = ds_train  # No split
     # train_ds, val_ds = random_split_dataset(ds_train, split_rate=0.9)
+
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
@@ -113,13 +112,13 @@ if __name__ == "__main__":
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
 
-    val_loader = data.DataLoader(
-        val_ds,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
-    )
+    # val_loader = data.DataLoader(
+    #     val_ds,
+    #     batch_size=batch_size,
+    #     shuffle=False,
+    #     num_workers=num_workers,
+    #     collate_fn=question_answer_to_position_batch_collate_fn,
+    # )
 
     # interpolate_loader = data.DataLoader(
     #     ds_interpolate,
@@ -142,7 +141,7 @@ if __name__ == "__main__":
         unique_id,
         model,
         train_loader,
-        val_loader,
+        # val_loader,
         # interpolate_loader,
         optimizer,
         device,
