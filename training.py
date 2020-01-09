@@ -101,7 +101,8 @@ if __name__ == "__main__":
 
     # here we split data in 90/10% for train/validation and use interpolate for test
 
-    train_ds, val_ds = random_split_dataset(ds_train, split_rate=0.9)
+    train_ds = ds_train  # No split
+    # train_ds, val_ds = random_split_dataset(ds_train, split_rate=0.9)
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
     train_loader = data.DataLoader(
