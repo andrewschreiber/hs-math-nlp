@@ -30,6 +30,7 @@ if __name__ == "__main__":
         device = torch.device("cpu")
         num_workers = 4
         max_elements = 2
+        max_batches = None
     else:
         device = torch.device("cuda")
         num_workers = 16
@@ -39,8 +40,14 @@ if __name__ == "__main__":
         # 56 modules
         # Total dataset of 112m
         # 224m rows (1 row per questions, 1 row per answer)
+
         # max_elements *per file*
         max_elements = None
+
+        # Paper model trained for 500k batches with 1028 batch size
+        #   = 512m datapoints used for training
+        # 512m datapoints / 128 batch size = 4m batches
+        max_batches = 5000000
 
     print("Device:", device)
 
@@ -80,15 +87,17 @@ if __name__ == "__main__":
     # print("categories", list(mdsmgr.get_categories()))
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
-    exp_name = "math_full112m_"
-    unique_id = "1-8-20_bs128"
+    exp_name = "math_112m_bs128_"
+    unique_id = "1-8-20_1"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
     # )
-    # ds_interpolate = mdsmgr.build_dataset_from_module(
-    #     "algebra", "linear_1d", "interpolate", max_elements=max_elements
-    # )
+
+    # TODO: Use full interpolate dataset
+    ds_interpolate = mdsmgr.build_dataset_from_module(
+        "algebra", "linear_1d", "interpolate", max_elements=max_elements
+    )
 
     print("Train dataset size", len(ds_train))
     # print("Interpolate dataset size", len(ds_interpolate))
@@ -100,7 +109,7 @@ if __name__ == "__main__":
     # here we split data in 90/10% for train/validation and use interpolate for test
 
     train_ds = ds_train  # No split
-    # train_ds, val_ds = random_split_dataset(ds_train, split_rate=0.9)
+    train_ds, val_ds = random_split_dataset(ds_train, split_rate=1)
 
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
@@ -112,21 +121,21 @@ if __name__ == "__main__":
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
 
-    # val_loader = data.DataLoader(
-    #     val_ds,
-    #     batch_size=batch_size,
-    #     shuffle=False,
-    #     num_workers=num_workers,
-    #     collate_fn=question_answer_to_position_batch_collate_fn,
-    # )
+    val_loader = data.DataLoader(
+        val_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=question_answer_to_position_batch_collate_fn,
+    )
 
-    # interpolate_loader = data.DataLoader(
-    #     ds_interpolate,
-    #     batch_size=128,
-    #     shuffle=False,
-    #     num_workers=num_workers,
-    #     collate_fn=question_answer_to_position_batch_collate_fn,
-    # )
+    interpolate_loader = data.DataLoader(
+        ds_interpolate,
+        batch_size=128,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=question_answer_to_position_batch_collate_fn,
+    )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
 
@@ -136,16 +145,32 @@ if __name__ == "__main__":
 
     model = model.to(device)
 
+    og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
+
+    max_batches = og_datapoint_iterations / batch_size
+
     model_process.train(
-        exp_name,
-        unique_id,
-        model,
-        train_loader,
-        # val_loader,
-        # interpolate_loader,
-        optimizer,
-        device,
-        epochs=5000,
+        exp_name=exp_name,
+        unique_id=unique_id,
+        model=model,
+        training_data=train_loader,
+        optimizer=optimizer,
+        device=device,
+        epochs=5,
         tb=tb,
-        log_interval=100,
+        max_batches=max_batches,
+        validation_data=None,
     )
+
+    # model_process.train(
+    #     exp_name,
+    #     unique_id,
+    #     model,
+    #     train_loader,
+    #     optimizer,
+    #     device,
+    #     epochs=5000,
+    #     tb=tb,
+    #     log_interval=100,
+    #     max_batches=max_batches,
+    # )

@@ -17,13 +17,21 @@ from math_dataset import np_encode_string, question_to_position_batch_collate_fn
 
 
 def train_epoch(
-    model, training_data, optimizer, device, epoch, tb=None, log_interval=100
+    model,
+    training_data,
+    optimizer,
+    device,
+    epoch,
+    tb=None,
+    log_interval=100,
+    max_batches=None,
 ):
     model.train()
 
     total_loss = 0
     n_char_total = 0
     n_char_correct = 0
+    batch_count = 0
 
     for batch_idx, batch in enumerate(tqdm(training_data, mininterval=2, leave=False)):
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
@@ -59,6 +67,10 @@ def train_epoch(
                 sub_group="batch",
                 global_step=epoch * len(training_data) + batch_idx,
             )
+        batch_count += 1
+
+        if max_batches is not None and batch_count == max_batches:
+            break
 
     loss_per_char = total_loss / n_char_total
     accuracy = n_char_correct / n_char_total
@@ -71,7 +83,7 @@ def train_epoch(
             global_step=epoch,
         )
 
-    return loss_per_char, accuracy
+    return loss_per_char, accuracy, batch_count
 
 
 def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100):
@@ -167,10 +179,10 @@ def train(
     unique_id,
     model,
     training_data,
-    validation_data,
     optimizer,
     device,
     epochs,
+    validation_data=None,
     tb=None,
     log_interval=100,
     interpolate_interval=1,
@@ -180,15 +192,27 @@ def train(
     best_valid_loss=float("Inf"),
     best_interpolate_accu=0.0,
     best_interpolate_loss=float("Inf"),
+    max_batches=None,
 ):
+
+    total_batches = 0
 
     for epoch_i in range(start_epoch, epochs):
         print("[ Epoch", epoch_i, "]")
 
         start = time.time()
-        train_loss, train_accu = train_epoch(
-            model, training_data, optimizer, device, epoch_i, tb, log_interval
+        train_loss, train_accu, batch_count = train_epoch(
+            model,
+            training_data,
+            optimizer,
+            device,
+            epoch_i,
+            tb,
+            log_interval,
+            max_batches - total_batches,
         )
+        total_batches += batch_count
+
         print(
             "[Training]  loss: {train_loss}, ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
             "elapse: {elapse:3.3f}ms".format(
@@ -198,41 +222,57 @@ def train(
                 elapse=(time.time() - start) * 1000,
             )
         )
+        state = build_checkpoint(
+            exp_name,
+            unique_id,
+            "training",
+            model,
+            optimizer,
+            train_accu,
+            train_loss,
+            epoch_i,
+            total_batches,
+        )
+
+        rotating_save_checkpoint(
+            state, prefix=f"{exp_name}_{unique_id}training", path="./checkpoints", nb=5,
+        )
 
         start = time.time()
-        valid_loss, valid_accu = eval_epoch(
-            model, validation_data, device, epoch_i, tb, log_interval
-        )
-        print(
-            "[Validation]  loss: {valid_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
-            "elapse: {elapse:3.3f}ms".format(
-                valid_loss=valid_loss,
-                ppl=math.exp(min(valid_loss, 100)),
-                accu=100 * valid_accu,
-                elapse=(time.time() - start) * 1000,
+        if validation_data is not None:
+            valid_loss, valid_accu = eval_epoch(
+                model, validation_data, device, epoch_i, tb, log_interval
             )
-        )
+            print(
+                "[Validation]  loss: {valid_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
+                "elapse: {elapse:3.3f}ms".format(
+                    valid_loss=valid_loss,
+                    ppl=math.exp(min(valid_loss, 100)),
+                    accu=100 * valid_accu,
+                    elapse=(time.time() - start) * 1000,
+                )
+            )
 
-        if valid_accu > best_valid_accu:
-            print("Checkpointing Validation Model...")
-            best_valid_accu = valid_accu
-            best_valid_loss = valid_loss
-            state = build_checkpoint(
-                exp_name,
-                unique_id,
-                "validation",
-                model,
-                optimizer,
-                best_valid_accu,
-                best_valid_loss,
-                epoch_i,
-            )
-            rotating_save_checkpoint(
-                state,
-                prefix=f"{exp_name}_{unique_id}_validation",
-                path="./checkpoints",
-                nb=5,
-            )
+            if valid_accu > best_valid_accu:
+                print("Checkpointing Validation Model...")
+                best_valid_accu = valid_accu
+                best_valid_loss = valid_loss
+                state = build_checkpoint(
+                    exp_name,
+                    unique_id,
+                    "validation",
+                    model,
+                    optimizer,
+                    best_valid_accu,
+                    best_valid_loss,
+                    epoch_i,
+                )
+                rotating_save_checkpoint(
+                    state,
+                    prefix=f"{exp_name}_{unique_id}_validation",
+                    path="./checkpoints",
+                    nb=5,
+                )
 
         if interpolate_data is not None and epoch_i % interpolate_interval == 0:
             start = time.time()
