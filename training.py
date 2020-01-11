@@ -42,7 +42,7 @@ if __name__ == "__main__":
         # 224m rows (1 row per questions, 1 row per answer)
 
         # max_elements *per file*
-        max_elements = 5
+        max_elements = None
 
         # Paper model trained for 500k batches with 1028 batch size
         #   = 512m datapoints used for training
@@ -87,8 +87,8 @@ if __name__ == "__main__":
     # print("categories", list(mdsmgr.get_categories()))
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
-    exp_name = "math_112m_bs128_TEST_"
-    unique_id = "1-8-20_1"
+    exp_name = "math_112m_bs128"
+    unique_id = "1-10-20_1"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
