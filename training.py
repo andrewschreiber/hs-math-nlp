@@ -129,13 +129,13 @@ if __name__ == "__main__":
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
 
-    interpolate_loader = data.DataLoader(
-        ds_interpolate,
-        batch_size=128,
-        shuffle=False,
-        num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
-    )
+    # interpolate_loader = data.DataLoader(
+    #     ds_interpolate,
+    #     batch_size=128,
+    #     shuffle=False,
+    #     num_workers=num_workers,
+    #     collate_fn=question_answer_to_position_batch_collate_fn,
+    # )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
 
