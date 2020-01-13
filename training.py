@@ -33,7 +33,9 @@ if __name__ == "__main__":
         max_batches = None
     else:
         device = torch.device("cuda")
-        num_workers = 16
+        # num_workers = 16
+        # https://github.com/facebookresearch/maskrcnn-benchmark/issues/195
+        num_workers = 0
 
         # 666666 datapoints per difficulty file
         # 3 difficulties/module -> 2m datapoints/module
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_112m_bs128"
-    unique_id = "1-10-20_1"
+    unique_id = "1-12-20_1"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
