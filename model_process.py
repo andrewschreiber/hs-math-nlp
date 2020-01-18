@@ -33,7 +33,9 @@ def train_epoch(
     n_char_correct = 0
     batch_count = 0
 
-    for batch_idx, batch in enumerate(tqdm(training_data, mininterval=2, leave=False)):
+    for batch_idx, batch in enumerate(
+        tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True)
+    ):
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
