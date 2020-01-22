@@ -3,11 +3,27 @@
 # Not meant to be run as a bash script, yet.
 
 
-# First, create a disk 
-gcloud beta compute disks create hs-math-ssd --project=hs-math-nlp --type=pd-ssd --size=60GB --zone=us-west1-a --physical-block-size=4096 --image=c2-deeplearning-pytorch-1-3-cu100-20191219
+# XXX First, create a disk  - DOESNT WORK WITH SPOT INSTANCES CAUSE OF GROUP
+# gcloud beta compute disks create hs-math-ssd --project=hs-math-nlp --type=pd-ssd --size=60GB --zone=us-west1-a --physical-block-size=4096 --image=c2-deeplearning-pytorch-1-3-cu100-20191219
+
+# Create a cloud storage bucket
+# https://console.cloud.google.com/storage/browser
+# Upload from
 
 # Second, create a cheap instance to download your data and code
 gcloud beta compute --project=hs-math-nlp instances create instance-1 --zone=us-west1-a --machine-type=n1-standard-1 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=8190450584-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append --disk=name=pytorch-math-ssd,device-name=pytorch-math-ssd,mode=rw,boot=yes --reservation-affinity=any
+
+
+gcloud compute instances create $INSTANCE_NAME \
+        --zone=$ZONE \
+        --image-family=$IMAGE_FAMILY \
+        --image-project=deeplearning-platform-release \
+        --maintenance-policy=TERMINATE \
+        --machine-type=$INSTANCE_TYPE \
+        --boot-disk-size=50GB \
+        --metadata="install-nvidia-driver=True" \
+        --preemptible \
+        --scopes cloud-platform
 
 # After setting everything up, shut down the instance.
 
