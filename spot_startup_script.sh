@@ -2,6 +2,8 @@
 
 # Assumes the latest github version is synced to the bucket
 
+echo "Running startup script"
+
 gsutil cp gs://math-checkpoints-data/hs-math-nlp-master.zip math.zip
 
 unzip math.zip
@@ -15,3 +17,5 @@ tar xvzf dataset.zip
 pip install --user tensorboard tensorboardX
 
 python training.py
+
+echo "Completed startup script"

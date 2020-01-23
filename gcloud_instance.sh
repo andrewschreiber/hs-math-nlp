@@ -43,4 +43,4 @@ gcloud beta compute --project "hs-math-nlp" instance-groups managed set-autoscal
 gcloud beta compute --project "hs-math-nlp" ssh --zone "us-west1-b" "instance-group-pre-v100-bfwl"
 
 
-# https://stackoverflow.com/questions/34005480/how-to-detect-system-acpi-g2-s5-soft-off-event-with-python-on-linux/59855096#59855096
+# wget https://storage.googleapis.com/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
