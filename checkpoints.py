@@ -32,7 +32,17 @@ def rotating_save_checkpoint(state, prefix, path="./checkpoints", nb=5):
 
 
 def build_checkpoint(
-    exp_name, unique_id, tpe, model, optimizer, acc, loss, epoch, batch
+    exp_name,
+    unique_id,
+    tpe,
+    model,
+    optimizer,
+    acc,
+    loss,
+    epoch,
+    total_batches,
+    is_preempted=False,
+    in_epoch_batch_count=0,
 ):
     return {
         "exp_name": exp_name,
@@ -43,7 +53,9 @@ def build_checkpoint(
         "acc": acc,
         "loss": loss,
         "epoch": epoch,
-        "batch": batch,
+        "total_batches": total_batches,
+        "is_preempted": is_preempted,
+        "in_epoch_batch_count": in_epoch_batch_count,
     }
 
 

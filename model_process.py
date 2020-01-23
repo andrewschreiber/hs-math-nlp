@@ -1,9 +1,12 @@
 import time
+import sys
 import math
 from tqdm import tqdm  # tqdm_notebook as tqdm
 import numpy as np
+import os
 import torch
 from torch.utils import data
+import utils
 
 # import torch.nn.functional as F
 from transformer import Constants
@@ -25,13 +28,13 @@ def train_epoch(
     tb=None,
     log_interval=100,
     max_batches=None,
+    total_batch_count=0,
 ):
     model.train()
 
     total_loss = 0
     n_char_total = 0
     n_char_correct = 0
-    batch_count = 0
 
     for batch_idx, batch in enumerate(
         tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True)
@@ -69,10 +72,23 @@ def train_epoch(
                 sub_group="batch",
                 global_step=epoch * len(training_data) + batch_idx,
             )
-        batch_count += 1
+        total_batch_count += 1
 
-        if max_batches is not None and batch_count == max_batches:
+        if max_batches is not None and total_batch_count == max_batches:
+            print(
+                f"Reached {total_batch_count} batches on max_batches of {max_batches}. Breaking out of epoch"
+            )
             break
+        if utils.is_preempted():
+            print(f"Preemption at end of batch: {total_batch_count}")
+            break
+
+            # Create a JSON file that you will reference to rehydrate
+            # Fields:
+            #   batch_count
+            #   random_seed
+            #
+            # return
 
     loss_per_char = total_loss / n_char_total
     accuracy = n_char_correct / n_char_total
@@ -85,7 +101,7 @@ def train_epoch(
             global_step=epoch,
         )
 
-    return loss_per_char, accuracy, batch_count
+    return loss_per_char, accuracy, total_batch_count
 
 
 def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100):
@@ -212,6 +228,7 @@ def train(
             tb,
             log_interval,
             max_batches - total_batches,
+            total_batches,
         )
         total_batches += batch_count
 
@@ -224,6 +241,23 @@ def train(
                 elapse=(time.time() - start) * 1000,
             )
         )
+
+        if utils.is_preempted():
+            print("Handle pre emption in model_process")
+            # Create a JSON file that you will reference to rehydrate
+            # Fields:
+            #   epoch
+            #   batch_count (within epoch)
+            #   random_seed for shuffle
+            #   loss_per_char
+            #   accuracy
+            #
+            #
+            # return
+
+            # sys.exit(0)
+
+        start = time.time()
         state = build_checkpoint(
             exp_name,
             unique_id,
@@ -234,13 +268,16 @@ def train(
             train_loss,
             epoch_i,
             total_batches,
+            utils.is_preempted(),
+            batch_count,
         )
 
         rotating_save_checkpoint(
             state, prefix=f"{exp_name}_{unique_id}training", path="./checkpoints", nb=5,
         )
+        print(f"Save checkpoint time: {(time.time() - start) * 1000}")
 
-        start = time.time()
+        # start = time.time()
         if validation_data is not None:
             valid_loss, valid_accu = eval_epoch(
                 model, validation_data, device, epoch_i, tb, log_interval

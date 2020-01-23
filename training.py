@@ -4,6 +4,7 @@ from tensorboard_utils import Tensorboard
 import utils
 import model_process
 import random
+
 from math_dataset import (
     random_split_dataset,
     question_answer_to_position_batch_collate_fn,
@@ -22,6 +23,17 @@ import os
 
 # import math
 import multiprocessing
+import signal
+
+
+def sigterm_handler(sig, frame):
+    print("Got SIGTERM")
+    os.environ["IS_PREEMPTED"] = "TRUE"
+    print(os.environ["IS_PREEMPTED"])
+
+
+signal.signal(signal.SIGTERM, sigterm_handler)
+
 
 if __name__ == "__main__":
     # For laptop & deep learning rig testing on the same code
@@ -104,6 +116,7 @@ if __name__ == "__main__":
     print("Train dataset size", len(ds_train))
     # print("Interpolate dataset size", len(ds_interpolate))
 
+    # TODO: Regenerate checkpoint here
     model = utils.build_transformer()
 
     optimizer = optim.Adam(model.parameters(), lr=6e-6, betas=(0.9, 0.995), eps=1e-9)
@@ -140,6 +153,27 @@ if __name__ == "__main__":
     # )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
+
+    # from checkpoints import restore_checkpoint
+
+    # state = restore_checkpoint(
+    #     model,
+    #     optimizer,
+    #     "checkpoints/math_ds_arithmetic_add_or_sub_easy_2019-04-22T13:32:24_validation_best.pth",
+    # )
+    # exp_name = state["exp_name"]
+    # unique_id = state["unique_id"]
+    # model = state["model"]
+    # optimizer = state["optimizer"]
+    # epoch = state["epoch"]
+    # best_acc = state["acc"]
+    # best_loss = state["loss"]
+
+    # print("exp_name", exp_name)
+    # print("unique_id", unique_id)
+    # print("epoch", epoch)
+    # print("best_acc", best_acc)
+    # print("best_loss", best_loss)
 
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")

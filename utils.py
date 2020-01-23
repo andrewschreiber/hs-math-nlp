@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import os
 from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
 from transformer.Models import Transformer
 
@@ -28,3 +29,7 @@ def build_transformer(
         len_max_seq_encoder=len_max_seq_encoder,
         len_max_seq_decoder=len_max_seq_decoder,
     )
+
+
+def is_preempted():
+    return os.environ.get("IS_PREEMPTED", None) == "TRUE"
