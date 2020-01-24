@@ -1,6 +1,7 @@
 # import checkpoints
 # from tensorboard_utils import tensorboard_event_accumulator
 from tensorboard_utils import Tensorboard
+from checkpoints import restore_checkpoint
 import utils
 import model_process
 import random
@@ -134,8 +135,6 @@ if __name__ == "__main__":
     # )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
-
-    from checkpoints import restore_checkpoint
 
     state = restore_checkpoint(
         "checkpoints/math_112m_bs128_1-12-20_1training_best.pth",
