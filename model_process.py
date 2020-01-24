@@ -34,10 +34,6 @@ def train_epoch(
     n_char_total = 0
     n_char_correct = 0
 
-    # TODO: Test if this works, you want to keep the iterable but skip ahead
-    # Is there a faster way we can get here? Seems pretty wasteful if we have 100m datapoints.
-    # Maybe just pass a reduced Dataset? Avoids having to think about max batches, run batch count, start batch.
-
     for batch_idx, batch in enumerate(
         tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True),
         start=start_batch,
