@@ -138,7 +138,9 @@ if __name__ == "__main__":
     from checkpoints import restore_checkpoint
 
     state = restore_checkpoint(
-        "checkpoints/math_112m_bs128_1-12-20_1training_best.pth", model, optimizer,
+        "checkpoints/math_112m_bs128_1-12-20_1training_best.pth",
+        model=model,
+        optimizer=optimizer,
     )
     epoch = state["epoch"]
     best_acc = state["acc"]
