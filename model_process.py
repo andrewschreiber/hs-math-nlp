@@ -242,21 +242,6 @@ def train(
             )
         )
 
-        if utils.is_preempted():
-            print("Handle pre emption in model_process")
-            # Create a JSON file that you will reference to rehydrate
-            # Fields:
-            #   epoch
-            #   batch_count (within epoch)
-            #   random_seed for shuffle
-            #   loss_per_char
-            #   accuracy
-            #
-            #
-            # return
-
-            # sys.exit(0)
-
         start = time.time()
         state = build_checkpoint(
             exp_name,
@@ -273,7 +258,10 @@ def train(
         )
 
         rotating_save_checkpoint(
-            state, prefix=f"{exp_name}_{unique_id}training", path="./checkpoints", nb=5,
+            state,
+            prefix=f"{exp_name}_{unique_id}_{total_batches}_training",
+            path="./checkpoints",
+            nb=5,
         )
         print(f"Save checkpoint time: {(time.time() - start) * 1000}")
 

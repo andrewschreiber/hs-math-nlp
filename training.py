@@ -102,7 +102,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_112m_bs128"
-    unique_id = "1-12-20_1"
+    unique_id = "1-23-20_final"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
@@ -154,20 +154,14 @@ if __name__ == "__main__":
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
 
-    # from checkpoints import restore_checkpoint
+    from checkpoints import restore_checkpoint
 
-    # state = restore_checkpoint(
-    #     model,
-    #     optimizer,
-    #     "checkpoints/math_ds_arithmetic_add_or_sub_easy_2019-04-22T13:32:24_validation_best.pth",
-    # )
-    # exp_name = state["exp_name"]
-    # unique_id = state["unique_id"]
-    # model = state["model"]
-    # optimizer = state["optimizer"]
-    # epoch = state["epoch"]
-    # best_acc = state["acc"]
-    # best_loss = state["loss"]
+    state = restore_checkpoint(
+        model, optimizer, "checkpoints/math_112m_bs128_1-12-20_1training_0.pth",
+    )
+    epoch = state["epoch"]
+    best_acc = state["acc"]
+    best_loss = state["loss"]
 
     # print("exp_name", exp_name)
     # print("unique_id", unique_id)
@@ -185,6 +179,8 @@ if __name__ == "__main__":
 
     max_batches = og_datapoint_iterations / batch_size
 
+    print(f"Calculated max batches: {max_batches}")
+
     model_process.train(
         exp_name=exp_name,
         unique_id=unique_id,
@@ -196,6 +192,8 @@ if __name__ == "__main__":
         tb=tb,
         max_batches=max_batches,
         validation_data=None,
+        start_epoch=1,
+        start_batch=None,
     )
 
     # model_process.train(
