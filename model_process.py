@@ -1,9 +1,7 @@
 import time
-import sys
 import math
 from tqdm import tqdm  # tqdm_notebook as tqdm
 import numpy as np
-import os
 import torch
 from torch.utils import data
 import utils
@@ -28,7 +26,8 @@ def train_epoch(
     tb=None,
     log_interval=100,
     max_batches=None,
-    total_batch_count=0,
+    run_batch_count=0,
+    start_batch=None,
 ):
     model.train()
 
@@ -36,9 +35,11 @@ def train_epoch(
     n_char_total = 0
     n_char_correct = 0
 
-    for batch_idx, batch in enumerate(
+    for batch_idx_raw, batch in enumerate(
         tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True)
     ):
+        batch_idx = batch_idx_raw + start_batch
+
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
@@ -72,15 +73,17 @@ def train_epoch(
                 sub_group="batch",
                 global_step=epoch * len(training_data) + batch_idx,
             )
-        total_batch_count += 1
+        run_batch_count += 1
 
-        if max_batches is not None and total_batch_count == max_batches:
+        if max_batches is not None and run_batch_count == max_batches:
             print(
-                f"Reached {total_batch_count} batches on max_batches of {max_batches}. Breaking out of epoch"
+                f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking out of epoch"
             )
             break
         if utils.is_preempted():
-            print(f"Preemption at end of batch: {total_batch_count}")
+            print(
+                f"Preemption at end of Epoch batch: {batch_idx_raw} and Run batch: {run_batch_count}. Breaking from epoch."
+            )
             break
 
             # Create a JSON file that you will reference to rehydrate
@@ -101,7 +104,7 @@ def train_epoch(
             global_step=epoch,
         )
 
-    return loss_per_char, accuracy, total_batch_count
+    return loss_per_char, accuracy, run_batch_count
 
 
 def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100):
@@ -206,31 +209,36 @@ def train(
     interpolate_interval=1,
     interpolate_data=None,
     start_epoch=0,
+    start_batch=None,
     best_valid_accu=0.0,
     best_valid_loss=float("Inf"),
     best_interpolate_accu=0.0,
     best_interpolate_loss=float("Inf"),
-    max_batches=None,
+    run_max_batches=None,
 ):
 
-    total_batches = 0
+    run_batches = 0
 
     for epoch_i in range(start_epoch, epochs):
         print("[ Epoch", epoch_i, "]")
+        epoch_max_batches_remaining = (
+            run_max_batches - run_batches if run_max_batches is not None else None
+        )
 
         start = time.time()
-        train_loss, train_accu, batch_count = train_epoch(
-            model,
-            training_data,
-            optimizer,
-            device,
-            epoch_i,
-            tb,
-            log_interval,
-            max_batches - total_batches,
-            total_batches,
+        train_loss, train_accu, epoch_batch_count = train_epoch(
+            model=model,
+            training_data=training_data,
+            optimizer=optimizer,
+            device=device,
+            epoch=epoch_i,
+            tb=tb,
+            log_interval=log_interval,
+            max_batches=epoch_max_batches_remaining,
+            run_batch_count=run_batches,
+            start_batch=start_batch,
         )
-        total_batches += batch_count
+        run_batches += epoch_batch_count
 
         print(
             "[Training]  loss: {train_loss}, ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
@@ -252,14 +260,14 @@ def train(
             train_accu,
             train_loss,
             epoch_i,
-            total_batches,
+            run_batches,
             utils.is_preempted(),
-            batch_count,
+            epoch_batch_count,
         )
 
         rotating_save_checkpoint(
             state,
-            prefix=f"{exp_name}_{unique_id}_{total_batches}_training",
+            prefix=f"{exp_name}_{unique_id}_{run_batches}_training",
             path="./checkpoints",
             nb=5,
         )

@@ -6,9 +6,9 @@ import model_process
 import random
 
 from math_dataset import (
-    random_split_dataset,
+    # random_split_dataset,
     question_answer_to_position_batch_collate_fn,
-    MathDatasetManager,
+    # MathDatasetManager,
     FullDatasetManager,
 )
 
@@ -27,22 +27,19 @@ import signal
 
 
 def sigterm_handler(sig, frame):
-    print("Got SIGTERM")
+    print("Got SIGTERM. Setting `IS_PREEMPTED` to true.")
     os.environ["IS_PREEMPTED"] = "TRUE"
-    print(os.environ["IS_PREEMPTED"])
-
-
-signal.signal(signal.SIGTERM, sigterm_handler)
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, sigterm_handler)
     # For laptop & deep learning rig testing on the same code
     if not torch.cuda.is_available():
         multiprocessing.set_start_method("spawn", True)
         device = torch.device("cpu")
-        num_workers = 4
+        num_workers = 0
         max_elements = 2
-        max_batches = None
+        # max_batches = None
     else:
         device = torch.device("cuda")
         # num_workers = 16
@@ -61,7 +58,7 @@ if __name__ == "__main__":
         # Paper model trained for 500k batches with 1028 batch size
         #   = 512m datapoints used for training
         # 512m datapoints / 128 batch size = 4m batches
-        max_batches = 5000000
+        # max_batches = 5000000
 
     print("Device:", device)
 
@@ -116,33 +113,17 @@ if __name__ == "__main__":
     print("Train dataset size", len(ds_train))
     # print("Interpolate dataset size", len(ds_interpolate))
 
-    # TODO: Regenerate checkpoint here
     model = utils.build_transformer()
 
     optimizer = optim.Adam(model.parameters(), lr=6e-6, betas=(0.9, 0.995), eps=1e-9)
 
-    # here we split data in 90/10% for train/validation and use interpolate for test
-
-    train_ds = ds_train  # No split
-    train_ds, val_ds = random_split_dataset(ds_train, split_rate=1)
-
-    # we provide the function question_answer_to_position_batch_collate_fn that collates
-    # all questions/answers into transformer format enhanced with char positioning
-    train_loader = data.DataLoader(
-        train_ds,
-        batch_size=batch_size,
-        shuffle=shuffle,
-        num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
-    )
-
-    val_loader = data.DataLoader(
-        val_ds,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
-    )
+    # val_loader = data.DataLoader(
+    #     val_ds,
+    #     batch_size=batch_size,
+    #     shuffle=False,
+    #     num_workers=num_workers,
+    #     collate_fn=question_answer_to_position_batch_collate_fn,
+    # )
 
     # interpolate_loader = data.DataLoader(
     #     ds_interpolate,
@@ -157,11 +138,13 @@ if __name__ == "__main__":
     from checkpoints import restore_checkpoint
 
     state = restore_checkpoint(
-        model, optimizer, "checkpoints/math_112m_bs128_1-12-20_1training_0.pth",
+        "checkpoints/math_112m_bs128_1-12-20_1training_best.pth", model, optimizer,
     )
     epoch = state["epoch"]
     best_acc = state["acc"]
     best_loss = state["loss"]
+
+    start_batch = state.get("start_batch", None) or 0
 
     # print("exp_name", exp_name)
     # print("unique_id", unique_id)
@@ -177,9 +160,23 @@ if __name__ == "__main__":
 
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
-    max_batches = og_datapoint_iterations / batch_size - 875000  # 1 epoch in
+    run_max_batches = og_datapoint_iterations / batch_size - 875000  # 1 epoch in
 
-    print(f"Calculated max batches: {max_batches}")
+    print(f"Calculated max batches: {run_max_batches}")
+
+    # we provide the function question_answer_to_position_batch_collate_fn that collates
+    # all questions/answers into transformer format enhanced with char positioning
+
+    # train_ds = ds_train[start_batch:]
+    train_ds = ds_train
+
+    train_loader = data.DataLoader(
+        train_ds,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        collate_fn=question_answer_to_position_batch_collate_fn,
+    )
 
     model_process.train(
         exp_name=exp_name,
@@ -190,10 +187,10 @@ if __name__ == "__main__":
         device=device,
         epochs=99,  # Not relevant, will get ended before this due to max_b
         tb=tb,
-        max_batches=max_batches,
+        run_max_batches=run_max_batches,
         validation_data=None,
         start_epoch=1,
-        start_batch=0,
+        start_batch=start_batch,
     )
 
     # model_process.train(
