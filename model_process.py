@@ -30,7 +30,6 @@ def train_epoch(
     start_batch=None,
 ):
     model.train()
-
     total_loss = 0
     n_char_total = 0
     n_char_correct = 0
