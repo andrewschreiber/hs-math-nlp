@@ -90,7 +90,9 @@ if __name__ == "__main__":
     # mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
 
     ds_train = FullDatasetManager(
-        "./mathematics_dataset-v1.0", max_elements=max_elements
+        "./mathematics_dataset-v1.0",
+        max_elements=max_elements,
+        deterministic=deterministic,
     )
     # one of the options here is to type comments so fast that she has to listen and so on and so forth.
     #
@@ -148,10 +150,11 @@ if __name__ == "__main__":
     start_batch = state.get("start_batch", None) or 0
 
     # Need to move optimizer state to GPU memory
-    for state in optimizer.state.values():
-        for k, v in state.items():
-            if torch.is_tensor(v):
-                state[k] = v.cuda()
+    if torch.cuda.is_available():
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if torch.is_tensor(v):
+                    state[k] = v.cuda()
 
     # print("exp_name", exp_name)
     # print("unique_id", unique_id)
@@ -185,6 +188,8 @@ if __name__ == "__main__":
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
 
+    # Could create a second dataloader here mid_train_loader, that is used only for completing the epoch. Prevents you from having to .next() through the iterable. What are the implications on TB?
+
     model_process.train(
         exp_name=exp_name,
         unique_id=unique_id,
@@ -197,7 +202,7 @@ if __name__ == "__main__":
         run_max_batches=run_max_batches,
         validation_data=None,
         start_epoch=1,
-        start_batch=start_batch,
+        start_batch=300,
     )
 
     # model_process.train(

@@ -34,6 +34,15 @@ def train_epoch(
     n_char_total = 0
     n_char_correct = 0
 
+    # TODO: Test if this works, you want to keep the iterable but skip ahead
+    # Is there a faster way we can get here? Seems pretty wasteful if we have 100m datapoints.
+    # Maybe just pass a reduced Dataset? Avoids having to think about max batches, run batch count, start batch.
+    start = time.time()
+    if start_batch is not None:
+        for i in range(start_batch):
+            training_data.next()
+    print(f"Speed per batch {((time.time() - start) * 1000)/start_batch} of ")
+
     for batch_idx_raw, batch in enumerate(
         tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True)
     ):
@@ -84,13 +93,6 @@ def train_epoch(
                 f"Preemption at end of Epoch batch: {batch_idx_raw} and Run batch: {run_batch_count}. Breaking from epoch."
             )
             break
-
-            # Create a JSON file that you will reference to rehydrate
-            # Fields:
-            #   batch_count
-            #   random_seed
-            #
-            # return
 
     loss_per_char = total_loss / n_char_total
     accuracy = n_char_correct / n_char_total

@@ -326,7 +326,7 @@ class MathDatasetManager:
 
 
 class FullDatasetManager(data.Dataset):
-    def __init__(self, root_dir, max_elements=None):
+    def __init__(self, root_dir, max_elements=None, deterministic=False):
         self.root_dir = Path(root_dir)
         self.full_df = None
         self.max_elements = max_elements
@@ -348,17 +348,25 @@ class FullDatasetManager(data.Dataset):
             for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)
         ]
         print(f"File count: {len(files)}")
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            for questions, answers in executor.map(
-                self._getQuestionsAnswersFromFile, files
-            ):
+        if deterministic:
+            for questions, answers in map(self._getQuestionsAnswersFromFile, files):
                 data["questions"].extend(questions)
                 data["answers"].extend(answers)
+        else:
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                for questions, answers in executor.map(
+                    self._getQuestionsAnswersFromFile, files
+                ):
+                    data["questions"].extend(questions)
+                    data["answers"].extend(answers)
 
-        self.full_df = pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        
+        # Will shuffle deterministically
+        self.full_df = df.reindex(np.random.permutation(df.index))
 
         print(
-            f"Took {time.time() - start} seconds to initialize full dataset of length {self.full_df.shape[0]}"
+            f"Took {time.time() - start} seconds to initialize full dataset of length {self.full_df.shape[0]}. Deterministic: {deterministic}"
         )
 
     def _getQuestionsAnswersFromFile(self, filepath):
