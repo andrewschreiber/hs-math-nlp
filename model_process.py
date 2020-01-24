@@ -27,7 +27,7 @@ def train_epoch(
     log_interval=100,
     max_batches=None,
     run_batch_count=0,
-    start_batch=None,
+    start_batch=0,
 ):
     model.train()
     total_loss = 0
@@ -37,17 +37,11 @@ def train_epoch(
     # TODO: Test if this works, you want to keep the iterable but skip ahead
     # Is there a faster way we can get here? Seems pretty wasteful if we have 100m datapoints.
     # Maybe just pass a reduced Dataset? Avoids having to think about max batches, run batch count, start batch.
-    start = time.time()
-    if start_batch is not None:
-        for i in range(start_batch):
-            training_data.next()
-    print(f"Speed per batch {((time.time() - start) * 1000)/start_batch} of ")
 
-    for batch_idx_raw, batch in enumerate(
-        tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True)
+    for batch_idx, batch in enumerate(
+        tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True),
+        start=start_batch,
     ):
-        batch_idx = batch_idx_raw + start_batch
-
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
@@ -90,7 +84,7 @@ def train_epoch(
             break
         if utils.is_preempted():
             print(
-                f"Preemption at end of Epoch batch: {batch_idx_raw} and Run batch: {run_batch_count}. Breaking from epoch."
+                f"Preemption at end of Epoch batch: {batch_idx} and Run batch: {run_batch_count}. Breaking from epoch."
             )
             break
 
@@ -210,7 +204,7 @@ def train(
     interpolate_interval=1,
     interpolate_data=None,
     start_epoch=0,
-    start_batch=None,
+    start_batch=0,
     best_valid_accu=0.0,
     best_valid_loss=float("Inf"),
     best_interpolate_accu=0.0,

@@ -339,7 +339,7 @@ class FullDatasetManager(data.Dataset):
 
         print(f"Loading training data with max_elements: {self.max_elements}")
         start = time.time()
-        data = {"questions": [], "answers": []}
+        data = {"questions": [], "answers": [], "original_index": []}
         # all_questions = []
         # all_answers = []
         files = [
@@ -348,10 +348,17 @@ class FullDatasetManager(data.Dataset):
             for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)
         ]
         print(f"File count: {len(files)}")
+        data_index = 0
         if deterministic:
             for questions, answers in map(self._getQuestionsAnswersFromFile, files):
                 data["questions"].extend(questions)
                 data["answers"].extend(answers)
+                data["original_index"] = data_index
+                data_index += 1
+                # TODO: Add original index, which we will later save
+                # Then after each epoch shuffle.
+                # This way if you're 1000 epoches in, you don't have to reshuffle 1000 times after a preempt to get the right order. 
+                # We can reconstruct the data order by mapping original_index (which contains the information of what the data is) -> saved_index order.
         else:
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 for questions, answers in executor.map(
@@ -359,6 +366,8 @@ class FullDatasetManager(data.Dataset):
                 ):
                     data["questions"].extend(questions)
                     data["answers"].extend(answers)
+                    data["original_index"] = data_index
+                    data_index += 1
 
         df = pd.DataFrame(data)
         
@@ -389,7 +398,7 @@ class FullDatasetManager(data.Dataset):
     def __getitem__(self, idx):
         if self.full_df is None:
             raise ValueError("full_df is none in __getitem__")
-        question, answer = self.full_df.iloc[idx]
+        question, answer, _ = self.full_df.iloc[idx]
         return {
             "q": question,
             "q_enc": np_encode_string(question),
