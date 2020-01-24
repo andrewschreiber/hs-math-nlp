@@ -147,6 +147,12 @@ if __name__ == "__main__":
 
     start_batch = state.get("start_batch", None) or 0
 
+    # Need to move optimizer state to GPU memory
+    for state in optimizer.state.values():
+        for k, v in state.items():
+            if torch.is_tensor(v):
+                state[k] = v.cuda()
+
     # print("exp_name", exp_name)
     # print("unique_id", unique_id)
     # print("epoch", epoch)
