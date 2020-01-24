@@ -102,7 +102,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_112m_bs128"
-    unique_id = "1-23-20_final"
+    unique_id = "1-24-20_final"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
-    max_batches = og_datapoint_iterations / batch_size
+    max_batches = og_datapoint_iterations / batch_size - 875000  # 1 epoch in
 
     print(f"Calculated max batches: {max_batches}")
 
@@ -188,12 +188,12 @@ if __name__ == "__main__":
         training_data=train_loader,
         optimizer=optimizer,
         device=device,
-        epochs=5,
+        epochs=99,  # Not relevant, will get ended before this due to max_b
         tb=tb,
         max_batches=max_batches,
         validation_data=None,
         start_epoch=1,
-        start_batch=None,
+        start_batch=0,
     )
 
     # model_process.train(
