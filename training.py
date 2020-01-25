@@ -28,7 +28,7 @@ import signal
 
 
 if __name__ == "__main__":
-    if utils.is_spot_insantce():
+    if utils.is_spot_instance():
         signal.signal(signal.SIGTERM, utils.sigterm_handler)
     # For laptop & deep learning rig testing on the same code
     if not torch.cuda.is_available():
