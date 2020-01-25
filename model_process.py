@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from torch.utils import data
 import utils
+import sys
 
 # import torch.nn.functional as F
 from transformer import Constants
@@ -263,6 +264,9 @@ def train(
             nb=5,
         )
         print(f"Save checkpoint time: {(time.time() - start) * 1000}")
+        if utils.is_preempted():
+            print("Completed preemption handling. Cleanly exiting")
+            sys.exit(0)
 
         # start = time.time()
         if validation_data is not None:
