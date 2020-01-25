@@ -244,17 +244,17 @@ def train(
 
         start = time.time()
         state = build_checkpoint(
-            exp_name,
-            unique_id,
-            "training",
-            model,
-            optimizer,
-            train_accu,
-            train_loss,
-            epoch_i,
-            run_batches,
-            utils.is_preempted(),
-            epoch_batch_count,
+            exp_name=exp_name,
+            unique_id=unique_id,
+            tpe="training",
+            model=model,
+            optimizer=optimizer,
+            acc=train_accu,
+            loss=train_loss,
+            epoch=epoch_i,
+            run_batches=run_batches,
+            is_preempted=utils.is_preempted(),
+            epoch_batch_count=epoch_batch_count,
         )
 
         rotating_save_checkpoint(
@@ -268,78 +268,8 @@ def train(
             print("Completed preemption handling. Cleanly exiting")
             sys.exit(0)
 
-        # start = time.time()
-        if validation_data is not None:
-            valid_loss, valid_accu = eval_epoch(
-                model, validation_data, device, epoch_i, tb, log_interval
-            )
-            print(
-                "[Validation]  loss: {valid_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
-                "elapse: {elapse:3.3f}ms".format(
-                    valid_loss=valid_loss,
-                    ppl=math.exp(min(valid_loss, 100)),
-                    accu=100 * valid_accu,
-                    elapse=(time.time() - start) * 1000,
-                )
-            )
-
-            if valid_accu > best_valid_accu:
-                print("Checkpointing Validation Model...")
-                best_valid_accu = valid_accu
-                best_valid_loss = valid_loss
-                state = build_checkpoint(
-                    exp_name,
-                    unique_id,
-                    "validation",
-                    model,
-                    optimizer,
-                    best_valid_accu,
-                    best_valid_loss,
-                    epoch_i,
-                )
-                rotating_save_checkpoint(
-                    state,
-                    prefix=f"{exp_name}_{unique_id}_validation",
-                    path="./checkpoints",
-                    nb=5,
-                )
-
-        if interpolate_data is not None and epoch_i % interpolate_interval == 0:
-            start = time.time()
-            interpolate_loss, interpolate_accu = interpolate_epoch(
-                model, interpolate_data, device, epoch_i, tb, log_interval
-            )
-            print(
-                "[Interpolate]  loss: {interpolate_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
-                "elapse: {elapse:3.3f}ms".format(
-                    interpolate_loss=interpolate_loss,
-                    ppl=math.exp(min(interpolate_loss, 100)),
-                    accu=100 * interpolate_accu,
-                    elapse=(time.time() - start) * 1000,
-                )
-            )
-
-            if interpolate_accu > best_interpolate_accu:
-                print("Checkpointing Interpolate Model...")
-                best_interpolate_accu = interpolate_accu
-                best_interpolate_loss = interpolate_loss
-                state = build_checkpoint(
-                    exp_name,
-                    unique_id,
-                    "interpolate",
-                    model,
-                    optimizer,
-                    best_interpolate_accu,
-                    best_interpolate_loss,
-                    epoch_i,
-                )
-
-                rotating_save_checkpoint(
-                    state,
-                    prefix=f"{exp_name}_{unique_id}_interpolate",
-                    path="./checkpoints",
-                    nb=5,
-                )
+        training_data.shuffleData()
+        # See git history for validation & interpolation set handling
 
 
 def predict(generator, data, device, max_predictions=None):

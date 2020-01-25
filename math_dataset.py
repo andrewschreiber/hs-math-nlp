@@ -326,7 +326,7 @@ class MathDatasetManager:
 
 
 class FullDatasetManager(data.Dataset):
-    def __init__(self, root_dir, max_elements=None, deterministic=False):
+    def __init__(self, root_dir, max_elements=None, deterministic=False, start_epoch=0):
         self.root_dir = Path(root_dir)
         self.full_df = None
         self.max_elements = max_elements
@@ -355,10 +355,6 @@ class FullDatasetManager(data.Dataset):
                 data["answers"].extend(answers)
                 data["original_index"] = data_index
                 data_index += 1
-                # TODO: Add original index, which we will later save
-                # Then after each epoch shuffle.
-                # This way if you're 1000 epoches in, you don't have to reshuffle 1000 times after a preempt to get the right order. 
-                # We can reconstruct the data order by mapping original_index (which contains the information of what the data is) -> saved_index order.
         else:
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 for questions, answers in executor.map(
@@ -369,14 +365,17 @@ class FullDatasetManager(data.Dataset):
                     data["original_index"] = data_index
                     data_index += 1
 
-        df = pd.DataFrame(data)
-        
-        # Will shuffle deterministically
-        self.full_df = df.reindex(np.random.permutation(df.index))
+        self.full_df = pd.DataFrame(data)
+        for i in range(start_epoch + 1):
+            self.shuffleData()
 
         print(
             f"Took {time.time() - start} seconds to initialize full dataset of length {self.full_df.shape[0]}. Deterministic: {deterministic}"
         )
+
+    def shuffleData(self):
+        # Will shuffle deterministically if numpy seed is set
+        self.full_df = self.full_df.reindex(np.random.permutation(self.full_df.index))
 
     def _getQuestionsAnswersFromFile(self, filepath):
         count = 0

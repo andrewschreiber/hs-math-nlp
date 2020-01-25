@@ -89,11 +89,6 @@ if __name__ == "__main__":
 
     # mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
 
-    ds_train = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
-        max_elements=max_elements,
-        deterministic=deterministic,
-    )
     # one of the options here is to type comments so fast that she has to listen and so on and so forth.
     #
 
@@ -168,6 +163,13 @@ if __name__ == "__main__":
 
     model = model.to(device)
 
+    ds_train = FullDatasetManager(
+        "./mathematics_dataset-v1.0",
+        max_elements=max_elements,
+        deterministic=deterministic,
+        start_epoch=epoch,
+    )
+
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
     run_max_batches = og_datapoint_iterations / batch_size - 875000  # 1 epoch in
@@ -177,13 +179,12 @@ if __name__ == "__main__":
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
 
-    # train_ds = ds_train[start_batch:]
     train_ds = ds_train
 
     train_loader = data.DataLoader(
         train_ds,
         batch_size=batch_size,
-        shuffle=shuffle,
+        shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
