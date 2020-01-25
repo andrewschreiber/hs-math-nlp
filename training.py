@@ -97,7 +97,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_112m_bs128"
-    unique_id = "1-24-20_final"
+    unique_id = "1-24-20_2"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
@@ -108,7 +108,6 @@ if __name__ == "__main__":
     #     "algebra", "linear_1d", "interpolate", max_elements=max_elements
     # )
 
-    print("Train dataset size", len(ds_train))
     # print("Interpolate dataset size", len(ds_interpolate))
 
     model = utils.build_transformer()
@@ -169,6 +168,7 @@ if __name__ == "__main__":
         deterministic=deterministic,
         start_epoch=epoch,
     )
+    print("Train dataset size", len(ds_train))
 
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
@@ -179,10 +179,8 @@ if __name__ == "__main__":
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
 
-    train_ds = ds_train
-
     train_loader = data.DataLoader(
-        train_ds,
+        ds_train,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
