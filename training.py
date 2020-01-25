@@ -27,13 +27,9 @@ import multiprocessing
 import signal
 
 
-def sigterm_handler(sig, frame):
-    print("Got SIGTERM. Setting `IS_PREEMPTED` to true.")
-    os.environ["IS_PREEMPTED"] = "TRUE"
-
-
 if __name__ == "__main__":
-    signal.signal(signal.SIGTERM, sigterm_handler)
+    if utils.is_spot_insantce():
+        signal.signal(signal.SIGTERM, utils.sigterm_handler)
     # For laptop & deep learning rig testing on the same code
     if not torch.cuda.is_available():
         multiprocessing.set_start_method("spawn", True)
@@ -97,7 +93,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_112m_bs128"
-    unique_id = "1-24-20_2"
+    unique_id = "1-25-20_1"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements

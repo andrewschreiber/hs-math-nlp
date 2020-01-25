@@ -33,3 +33,13 @@ def build_transformer(
 
 def is_preempted():
     return os.environ.get("IS_PREEMPTED", None) == "TRUE"
+
+
+def sigterm_handler(sig, frame):
+    print("Got SIGTERM. Setting `IS_PREEMPTED` to true.")
+    os.environ["IS_PREEMPTED"] = "TRUE"
+
+
+def is_spot_instance():
+    return True
+
