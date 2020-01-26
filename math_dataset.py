@@ -377,7 +377,7 @@ class FullDatasetManager(data.Dataset):
         # Will shuffle deterministically if numpy seed is set
         start = time.time()
         self.full_df = self.full_df.reindex(np.random.permutation(self.full_df.index))
-        print(f"Speed of shuffling dataset: {(time.time() - start) * 1000}")
+        print(f"Speed of shuffling dataset: {(time.time() - start)} seconds")
 
     def _getQuestionsAnswersFromFile(self, filepath):
         count = 0
