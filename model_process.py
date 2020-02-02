@@ -268,7 +268,7 @@ def train(
             print("Completed preemption handling. Cleanly exiting")
             sys.exit(0)
 
-        training_data.shuffleData()
+        training_data.dataset.shuffleData()
         # See git history for validation & interpolation set handling
 
 
