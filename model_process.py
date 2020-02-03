@@ -251,7 +251,7 @@ def train(
             optimizer=optimizer,
             acc=train_accu,
             loss=train_loss,
-            epoch=epoch_i,
+            epoch=epoch_i + 1,
             run_batches=run_batches,
             is_preempted=utils.is_preempted(),
             epoch_batch_count=epoch_batch_count,

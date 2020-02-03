@@ -129,7 +129,7 @@ if __name__ == "__main__":
     tb = Tensorboard(exp_name, unique_name=unique_id)
 
     state = restore_checkpoint(
-        "checkpoints/math_112m_bs128_1-12-20_1training_best.pth",
+        "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
         model=model,
         optimizer=optimizer,
     )
@@ -148,9 +148,9 @@ if __name__ == "__main__":
 
     # print("exp_name", exp_name)
     # print("unique_id", unique_id)
-    # print("epoch", epoch)
-    # print("best_acc", best_acc)
-    # print("best_loss", best_loss)
+    print("epoch", epoch)
+    print("best_acc", best_acc)
+    print("best_loss", best_loss)
 
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")
@@ -162,13 +162,13 @@ if __name__ == "__main__":
         "./mathematics_dataset-v1.0",
         max_elements=max_elements,
         deterministic=deterministic,
-        start_epoch=epoch,
+        start_epoch=epoch + 1,  # TODO: remove fix for 1-25 checkpoint
     )
     print("Train dataset size", len(ds_train))
 
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
-    run_max_batches = og_datapoint_iterations / batch_size - 875000  # 1 epoch in
+    run_max_batches = og_datapoint_iterations / batch_size - 2 * 875000  # 2 epochs
 
     print(f"Calculated max batches: {run_max_batches}")
 
@@ -196,8 +196,8 @@ if __name__ == "__main__":
         tb=tb,
         run_max_batches=run_max_batches,
         validation_data=None,
-        start_epoch=1,
-        start_batch=300,
+        start_epoch=2,
+        start_batch=0,
     )
 
     # model_process.train(
