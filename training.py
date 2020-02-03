@@ -77,8 +77,8 @@ if __name__ == "__main__":
         random.seed(seed)
         np.random.seed(seed)
         os.environ["PYTHONHASHSEED"] = str(seed)
-        torch.backends.cudnn.deterministic = False
-        # torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
     shuffle = not deterministic
 
     print("Deterministic:", deterministic)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
 
     exp_name = "math_112m_bs128"
-    unique_id = "2-3-20_TEST"
+    unique_id = "2-3-20_0"
 
     # ds_train = mdsmgr.build_dataset_from_module(
     #     "algebra", "linear_1d", "train-easy", max_elements=max_elements

@@ -41,7 +41,7 @@ class Tensorboard:
 
     def _get_writer(self, group: str = ""):
         if group not in self.writers:
-            print(f"Adding group {group} to writers ({self.writers.keys()})")
+            # print(f"Adding group {group} to writers ({self.writers.keys()})")
             self.writers[group] = SummaryWriter(f"{str(self.path)}_{group}")
         return self.writers[group]
 
