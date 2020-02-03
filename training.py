@@ -162,7 +162,7 @@ if __name__ == "__main__":
         "./mathematics_dataset-v1.0",
         max_elements=max_elements,
         deterministic=deterministic,
-        start_epoch=epoch + 1,  # TODO: remove fix for 1-25 checkpoint
+        start_epoch=epoch,
     )
     print("Train dataset size", len(ds_train))
 
