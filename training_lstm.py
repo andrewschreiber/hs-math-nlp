@@ -6,6 +6,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
+from math_dataset import (
+    question_answer_to_position_batch_collate_fn,
+    MathDatasetManager,
+    FullDatasetManager,
+)
 
 dtype = torch.FloatTensor
 
@@ -16,11 +21,15 @@ n_class = len(word_dict) # number of class(=number of vocab)
 
 seq_data = ['cry', 'boy', 'jay', 'mew', 'cat', 'and', 'his', 'lie', 'big', 'sit']
 
-mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
-ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
+max_elements = 10
+#mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
+#ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
+#ds_train =  ds_train = FullDatasetManager(
+#         "./mathematics_dataset-v1.0", max_elements=max_elements
+#     )
 
-dataloader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
-                        shuffle=True, num_workers=0)    
+#dataloader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
+#                         shuffle=True, num_workers=0)    
 
 # TextLSTM Parameters
 n_step = 3
