@@ -9,23 +9,28 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn.functional as F
-#from
+from math_dataset import (
+    question_answer_to_position_batch_collate_fn,
+    MathDatasetManager,
+    FullDatasetManager,
+)
 
 dtype = torch.FloatTensor
 
 # CUDA for PyTorch
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
-cudnn.benchmark = True
+#cudnn.benchmark = True
 
 # Uni-LSTM(Attention) Parameters
 embedding_dim = 2
 n_hidden = 5 # number of hidden units in one cell
 num_classes = 2  # 0 or 1
+max_elements = 100
+vocab_size = 10
 
 exp_name = "math_test"
 unique_id = "1-13-2020"
-
 
 # 3 words sentences (=sequence_length is 3)
 

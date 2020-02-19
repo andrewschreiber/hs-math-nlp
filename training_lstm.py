@@ -14,22 +14,23 @@ from math_dataset import (
 
 dtype = torch.FloatTensor
 
-char_arr = [c for c in 'abcdefghijklmnopqrstuvwxyz']
-word_dict = {n: i for i, n in enumerate(char_arr)}
-number_dict = {i: w for i, w in enumerate(char_arr)}
-n_class = len(word_dict) # number of class(=number of vocab)
+# char_arr = [c for c in 'abcdefghijklmnopqrstuvwxyz']
+# word_dict = {n: i for i, n in enumerate(char_arr)}
+# number_dict = {i: w for i, w in enumerate(char_arr)}
+# n_class = len(word_dict) # number of class(=number of vocab)
 
-seq_data = ['cry', 'boy', 'jay', 'mew', 'cat', 'and', 'his', 'lie', 'big', 'sit']
+# seq_data = ['cry', 'boy', 'jay', 'mew', 'cat', 'and', 'his', 'lie', 'big', 'sit']
 
 max_elements = 10
-#mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
-#ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
-#ds_train =  ds_train = FullDatasetManager(
-#         "./mathematics_dataset-v1.0", max_elements=max_elements
-#     )
 
-#dataloader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
-#                         shuffle=True, num_workers=0)    
+mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
+ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
+ds_train =  ds_train = FullDatasetManager(
+        "./mathematics_dataset-v1.0", max_elements=max_elements
+    )
+
+dataloader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
+                        shuffle=True, num_workers=0)    
 
 # TextLSTM Parameters
 n_step = 3
