@@ -15,6 +15,12 @@
 # gcloud beta compute --project=hs-math-nlp instances create instance-1 --zone=us-west1-a --machine-type=n1-standard-1 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=8190450584-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append --disk=name=pytorch-math-ssd,device-name=pytorch-math-ssd,mode=rw,boot=yes --reservation-affinity=any
 
 
+export IMAGE_FAMILY="pytorch-latest-cpu" \
+export ZONE="us-west1-b" \
+export INSTANCE_NAME="my-fastai-instance" \
+export INSTANCE_TYPE="n1-highmem-8"
+
+
 # Dummy instance
 gcloud compute instances create $INSTANCE_NAME \
         --zone=$ZONE \
@@ -25,8 +31,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw \
-        --boot-disk-type=local-ssd
+        --scopes storage-rw 
 
 # Create your preemptible instance template
 gcloud beta compute --project=hs-math-nlp instance-templates create template-math 
