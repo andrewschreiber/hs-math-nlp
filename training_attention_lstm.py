@@ -4,6 +4,7 @@
   Reference : https://github.com/prakashpandey9/Text-Classification-Pytorch/blob/master/models/LSTM_Attn.py
 '''
 import numpy as np
+from tensorboard_utils import Tensorboard
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -24,25 +25,24 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 
 # Uni-LSTM(Attention) Parameters
 embedding_dim = 2
-n_hidden = 5 # number of hidden units in one cell
-num_classes = 2  # 0 or 1
+max_sentence_length = 50 
 max_elements = 100
-vocab_size = 10
+n_step = 1
+num_hidden = 128
+max_batches = 1
+num_workers = 0
 
 exp_name = "math_test"
-unique_id = "1-13-2020"
+unique_id = "02-24-2020"
 
 # 3 words sentences (=sequence_length is 3)
 
 mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
 ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
 
-dataloader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
+train_loader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
                         shuffle=True, num_workers=0) 
     
-input_batch = Variable(torch.LongTensor(inputs))
-target_batch = Variable(torch.LongTensor(targets))
-
 tb = Tensorboard(exp_name, unique_name=unique_id)
 
 class UniLSTM_Attention(nn.Module):
@@ -51,7 +51,7 @@ class UniLSTM_Attention(nn.Module):
 
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, n_hidden, bidirectional=False)
-        self.out = nn.Linear(n_hidden * 2, num_classes)
+        self.out = nn.Linear(1)
 
     # lstm_output : [batch_size, n_step, n_hidden * num_directions(=2)], F matrix
     def attention_net(self, lstm_output, final_state):
@@ -80,27 +80,40 @@ model = UniLSTM_Attention()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-# Training
-for epoch in range(5000):
-    optimizer.zero_grad()
-    output, attention = model(input_batch)
-    loss = criterion(output, target_batch)
-    if (epoch + 1) % 1000 == 0:
-        print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
+model_process.train(
+        exp_name=exp_name,
+        unique_id=unique_id,
+        model=model,
+        training_data=train_loader,
+        optimizer=optimizer,
+        device=device,
+        epochs=1,
+        tb=tb,
+        max_batches=max_batches,
+        validation_data=None,
+    )
 
-    loss.backward()
-    optimizer.step()
+# # Training
+# for epoch in range(5000):
+#     optimizer.zero_grad()
+#     output, attention = model(input_batch)
+#     loss = criterion(output, target_batch)
+#     if (epoch + 1) % 1000 == 0:
+#         print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
 
-# Test
-test_text = 'sorry hate you'
-tests = [np.asarray([word_dict[n] for n in test_text.split()])]
-test_batch = Variable(torch.LongTensor(tests))
+#     loss.backward()
+#     optimizer.step()
 
-# Predict
-predict, _ = model(test_batch)
-predict = predict.data.max(1, keepdim=True)[1]
-if predict[0][0] == 0:
-    print(test_text,"is Bad Mean...")
-else:
-    print(test_text,"is Good Mean!!")
+# # Test
+# test_text = 'sorry hate you'
+# tests = [np.asarray([word_dict[n] for n in test_text.split()])]
+# test_batch = Variable(torch.LongTensor(tests))
+
+# # Predict
+# predict, _ = model(test_batch)
+# predict = predict.data.max(1, keepdim=True)[1]
+# if predict[0][0] == 0:
+#     print(test_text,"is Bad Mean...")
+# else:
+#     print(test_text,"is Good Mean!!")
     
