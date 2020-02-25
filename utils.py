@@ -42,5 +42,5 @@ def sigterm_handler(sig, frame):
 
 def is_spot_instance():
     # TODO: Find os.environ flag / metadata request to check
-    return False
+    return True
 
