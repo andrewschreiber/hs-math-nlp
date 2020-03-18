@@ -62,7 +62,11 @@ def build_checkpoint(
 def restore_checkpoint(filename, model=None, optimizer=None):
     """restores checkpoint state from filename and load in model and optimizer if provided"""
     print(f"Extracting state from {filename}")
-    state = torch.load(filename)
+    if torch.device == "cuda":
+        state = torch.load(filename)
+    else:
+        state = torch.load(filename, map_location=torch.device("cpu"))
+
     if model:
         print(f"Loading model state_dict from state found in {filename}")
         model.load_state_dict(state["model"])
