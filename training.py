@@ -69,6 +69,12 @@ if __name__ == "__main__":
         batch_size = 128
     print("Batch size:", batch_size)
 
+    start_epoch = 0
+    print("Start epoch:", start_epoch)
+
+    should_restore_checkpoint = False
+    print("Should restore checkpoint:", should_restore_checkpoint)
+
     deterministic = True
     if deterministic:
         seed = 0
@@ -83,74 +89,37 @@ if __name__ == "__main__":
 
     print("Deterministic:", deterministic)
 
-    # mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
-
-    # one of the options here is to type comments so fast that she has to listen and so on and so forth.
-    #
-
-    # print("types", list(mdsmgr.get_types()))
-    # print("categories", list(mdsmgr.get_categories()))
-    # print("modules: algebra", mdsmgr.get_modules_for_category("algebra"))
-
     exp_name = "math_112m_bs128"
-    unique_id = "2-3-20_0"
-
-    # ds_train = mdsmgr.build_dataset_from_module(
-    #     "algebra", "linear_1d", "train-easy", max_elements=max_elements
-    # )
-
-    # TODO: Use full interpolate dataset
-    # ds_interpolate = mdsmgr.build_dataset_from_module(
-    #     "algebra", "linear_1d", "interpolate", max_elements=max_elements
-    # )
-
-    # print("Interpolate dataset size", len(ds_interpolate))
+    unique_id = "3-24-20_0_test"
 
     model = utils.build_transformer()
 
     optimizer = optim.Adam(model.parameters(), lr=6e-6, betas=(0.9, 0.995), eps=1e-9)
 
-    # val_loader = data.DataLoader(
-    #     val_ds,
-    #     batch_size=batch_size,
-    #     shuffle=False,
-    #     num_workers=num_workers,
-    #     collate_fn=question_answer_to_position_batch_collate_fn,
-    # )
-
-    # interpolate_loader = data.DataLoader(
-    #     ds_interpolate,
-    #     batch_size=128,
-    #     shuffle=False,
-    #     num_workers=num_workers,
-    #     collate_fn=question_answer_to_position_batch_collate_fn,
-    # )
-
     tb = Tensorboard(exp_name, unique_name=unique_id)
+    start_batch = 0
 
-    state = restore_checkpoint(
-        "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
-        model=model,
-        optimizer=optimizer,
-    )
-    epoch = state["epoch"]
-    best_acc = state["acc"]
-    best_loss = state["loss"]
+    if should_restore_checkpoint:
+        state = restore_checkpoint(
+            "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
+            model=model,
+            optimizer=optimizer,
+        )
+        epoch = state["epoch"]
+        best_acc = state["acc"]
+        best_loss = state["loss"]
 
-    start_batch = state.get("start_batch", None) or 0
+        start_batch = state.get("start_batch", None) or 0
+        # Need to move optimizer state to GPU memory
+        if torch.cuda.is_available():
+            for state in optimizer.state.values():
+                for k, v in state.items():
+                    if torch.is_tensor(v):
+                        state[k] = v.cuda()
 
-    # Need to move optimizer state to GPU memory
-    if torch.cuda.is_available():
-        for state in optimizer.state.values():
-            for k, v in state.items():
-                if torch.is_tensor(v):
-                    state[k] = v.cuda()
-
-    # print("exp_name", exp_name)
-    # print("unique_id", unique_id)
-    print("epoch", epoch)
-    print("best_acc", best_acc)
-    print("best_loss", best_loss)
+        print("epoch", epoch)
+        print("best_acc", best_acc)
+        print("best_loss", best_loss)
 
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")
@@ -162,9 +131,27 @@ if __name__ == "__main__":
         "./mathematics_dataset-v1.0",
         max_elements=max_elements,
         deterministic=deterministic,
-        start_epoch=2,
+        start_epoch=start_epoch,
     )
-    print("Train dataset size", len(ds_train))
+    print("Train size:", len(ds_train))
+
+    ds_interpolate = FullDatasetManager(
+        "./mathematics_dataset-v1.0",
+        max_elements=max_elements,
+        deterministic=deterministic,
+        start_epoch=start_epoch,
+        mode="interpolate",
+    )
+    print("Interpolate size:", len(ds_interpolate))
+
+    ds_extrapolate = FullDatasetManager(
+        "./mathematics_dataset-v1.0",
+        max_elements=max_elements,
+        deterministic=deterministic,
+        start_epoch=start_epoch,
+        mode="extrapolate",
+    )
+    print("Extrapolate size:", len(ds_extrapolate))
 
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
@@ -177,6 +164,22 @@ if __name__ == "__main__":
 
     train_loader = data.DataLoader(
         ds_train,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=question_answer_to_position_batch_collate_fn,
+    )
+
+    interpolate_loader = data.DataLoader(
+        ds_interpolate,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=question_answer_to_position_batch_collate_fn,
+    )
+
+    extrapolate_loader = data.DataLoader(
+        ds_extrapolate,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
@@ -196,19 +199,9 @@ if __name__ == "__main__":
         tb=tb,
         run_max_batches=run_max_batches,
         validation_data=None,
-        start_epoch=2,
-        start_batch=0,
+        start_epoch=start_epoch,
+        start_batch=start_batch,
+        interpolate_data=interpolate_loader,
+        extrapolate_data=extrapolate_loader,
+        checkpoint=torch.cuda.is_available(),  # Only save on GPUs
     )
-
-    # model_process.train(
-    #     exp_name,
-    #     unique_id,
-    #     model,
-    #     train_loader,
-    #     optimizer,
-    #     device,
-    #     epochs=5000,
-    #     tb=tb,
-    #     log_interval=100,
-    #     max_batches=max_batches,
-    # )

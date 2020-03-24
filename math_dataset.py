@@ -326,16 +326,32 @@ class MathDatasetManager:
 
 
 class FullDatasetManager(data.Dataset):
-    def __init__(self, root_dir, max_elements=None, deterministic=False, start_epoch=0):
+    def __init__(
+        self,
+        root_dir,
+        max_elements=None,
+        deterministic=False,
+        start_epoch=0,
+        mode="train",
+    ):
         self.root_dir = Path(root_dir)
         self.full_df = None
         self.max_elements = max_elements
 
-        self.dirs = {
-            "train-easy": self.root_dir / "train-easy",
-            "train-medium": self.root_dir / "train-medium",
-            "train-hard": self.root_dir / "train-hard",
-        }
+        if mode == "train":
+            self.dirs = {
+                "train-easy": self.root_dir / "train-easy",
+                "train-medium": self.root_dir / "train-medium",
+                "train-hard": self.root_dir / "train-hard",
+            }
+        elif mode == "interpolate":
+            self.dirs = {"interpolate": self.root_dir / "interpolate"}
+        elif mode == "extrapolate":
+            self.dirs = {"extrapolate": self.root_dir / "extrapolate"}
+        else:
+            raise NotImplementedError(
+                f"Mode {mode} failed. Try train, interpolate, or extrapolate"
+            )
 
         print(f"Loading training data with max_elements: {self.max_elements}")
         start = time.time()
@@ -370,7 +386,7 @@ class FullDatasetManager(data.Dataset):
             self.shuffleData()
 
         print(
-            f"Took {time.time() - start} seconds to initialize full dataset of length {self.full_df.shape[0]}. Deterministic: {deterministic}"
+            f"Took {time.time() - start} seconds to initialize dataset of length {self.full_df.shape[0]}. Deterministic: {deterministic}. Mode {mode}"
         )
 
     def shuffleData(self):

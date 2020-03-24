@@ -99,7 +99,7 @@ def train_epoch(
     return loss_per_char, accuracy, run_batch_count
 
 
-def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100):
+def inference_epoch(model, data, device, epoch, group, tb=None, log_interval=100):
     model.eval()
 
     total_loss = 0
@@ -107,9 +107,7 @@ def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100)
     n_char_correct = 0
 
     with torch.no_grad():
-        for batch_idx, batch in enumerate(
-            tqdm(validation_data, mininterval=2, leave=False)
-        ):
+        for batch_idx, batch in enumerate(tqdm(data, mininterval=2, leave=False)):
             # prepare data
             batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
                 lambda x: x.to(device), batch
@@ -134,52 +132,7 @@ def eval_epoch(model, validation_data, device, epoch, tb=None, log_interval=100)
     if tb is not None:
         tb.add_scalars(
             {"loss_per_char": loss_per_char, "accuracy": accuracy},
-            group="eval",
-            sub_group="epoch",
-            global_step=epoch,
-        )
-
-    return loss_per_char, accuracy
-
-
-def interpolate_epoch(
-    model, interpolate_data, device, epoch, tb=None, log_interval=100
-):
-    model.eval()
-
-    total_loss = 0
-    n_char_total = 0
-    n_char_correct = 0
-
-    with torch.no_grad():
-        for batch_idx, batch in enumerate(
-            tqdm(interpolate_data, mininterval=2, leave=False)
-        ):
-            # prepare data
-            batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
-                lambda x: x.to(device), batch
-            )
-            gold_as = batch_as[:, 1:]
-
-            # forward
-            pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
-            loss, n_correct = compute_performance(pred_as, gold_as, smoothing=False)
-
-            # note keeping
-            total_loss += loss.item()
-
-            non_pad_mask = gold_as.ne(Constants.PAD)
-            n_char = non_pad_mask.sum().item()
-            n_char_total += n_char
-            n_char_correct += n_correct
-
-    loss_per_char = total_loss / n_char_total
-    accuracy = n_char_correct / n_char_total
-
-    if tb is not None:
-        tb.add_scalars(
-            {"loss_per_char": loss_per_char, "accuracy": accuracy},
-            group="interpolate",
+            group=group,
             sub_group="epoch",
             global_step=epoch,
         )
@@ -207,7 +160,10 @@ def train(
     best_interpolate_accu=0.0,
     best_interpolate_loss=float("Inf"),
     run_max_batches=None,
+    extrapolate_data=None,
+    checkpoint=True,
 ):
+    print("~~~ Beginning Training ~~~~")
 
     run_batches = 0
 
@@ -242,28 +198,52 @@ def train(
             )
         )
 
-        start = time.time()
-        state = build_checkpoint(
-            exp_name=exp_name,
-            unique_id=unique_id,
-            tpe="training",
-            model=model,
-            optimizer=optimizer,
-            acc=train_accu,
-            loss=train_loss,
-            epoch=epoch_i + 1,
-            run_batches=run_batches,
-            is_preempted=utils.is_preempted(),
-            epoch_batch_count=epoch_batch_count,
-        )
+        inference_datasets = {}
+        if interpolate_data:
+            inference_datasets["interpolate"] = interpolate_data
+        if extrapolate_data:
+            inference_datasets["extrapolate"] = extrapolate_data
 
-        rotating_save_checkpoint(
-            state,
-            prefix=f"{exp_name}_{unique_id}_{run_batches}_training",
-            path="./checkpoints",
-            nb=5,
-        )
-        print(f"Save checkpoint time: {(time.time() - start) * 1000}")
+        for group, dataset in inference_datasets.items():
+            start = time.time()
+            inference_loss, inference_acc = inference_epoch(
+                model, dataset, device, epoch_i, group, tb, log_interval,
+            )
+            print(
+                "[{group}]  loss: {inference_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
+                "elapse: {elapse:3.3f}ms".format(
+                    group=group,
+                    inference_loss=inference_loss,
+                    ppl=math.exp(min(inference_loss, 100)),
+                    accu=100 * inference_acc,
+                    elapse=(time.time() - start) * 1000,
+                )
+            )
+
+        if checkpoint:
+            start = time.time()
+            state = build_checkpoint(
+                exp_name=exp_name,
+                unique_id=unique_id,
+                tpe="training",
+                model=model,
+                optimizer=optimizer,
+                acc=train_accu,
+                loss=train_loss,
+                epoch=epoch_i + 1,
+                run_batches=run_batches,
+                is_preempted=utils.is_preempted(),
+                epoch_batch_count=epoch_batch_count,
+            )
+
+            rotating_save_checkpoint(
+                state,
+                prefix=f"{exp_name}_{unique_id}_{run_batches}_training",
+                path="./checkpoints",
+                nb=5,
+            )
+            print(f"Save checkpoint time: {(time.time() - start) * 1000}")
+
         if utils.is_preempted():
             print("Completed preemption handling. Cleanly exiting")
             sys.exit(0)
