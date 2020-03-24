@@ -26,9 +26,9 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 max_sentence_length = 50 
 max_elements = 100
 n_step = 1
-num_hidden = 128
+num_hidden = 2048
 max_batches = 1
-num_workers = 0
+num_workers = 2
 
 exp_name = "math_test"
 unique_id = "02-24-2020"
@@ -42,7 +42,9 @@ ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy"
 #     )
 
 train_loader = torch.utils.data.DataLoader(ds_train, batch_size=1,
-                        shuffle=True, num_workers=num_workers)    
+                        shuffle=True, num_workers=num_workers,
+                        collate_fn=question_answer_to_position_batch_collate_fn)    
+
 
 #Define Model Architecture 
 
@@ -50,18 +52,18 @@ class TextLSTM(nn.Module):
     def __init__(self):
         super(TextLSTM, self).__init__()
 
-        self.lstm = nn.LSTM(input_size=max_sentence_length, hidden_size=num_hidden)
+        self.lstm = nn.LSTM(max_sentence_length, num_hidden,1)
         self.W = nn.Parameter(torch.randn([num_hidden, max_sentence_length]).type(dtype))
         self.b = nn.Parameter(torch.randn([max_sentence_length]).type(dtype))
-        self.out = nn.Linear(1)
+        self.out = nn.Linear(1,1)
 
-    def forward(self, X):
-        input = X.transpose(0, 1)  # X : [n_step, batch_size, n_class]
+    def forward(self, batch_qs, batch_qs_pos, batch_as, batch_as_pos):
+        #To Do: Change this input forward pass to match inputs
+        batch_size = len(batch_qs)
+        hidden_state = Variable(torch.zeros(1, batch_size, num_hidden))   # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
+        cell_state = Variable(torch.zeros(1, batch_size, num_hidden))     # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
 
-        hidden_state = Variable(torch.zeros(1, len(X), num_hidden))   # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
-        cell_state = Variable(torch.zeros(1, len(X), num_hidden))     # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
-
-        outputs, (_, _) = self.lstm(input, (hidden_state, cell_state))
+        outputs, (_, _) = self.lstm(batch_qs, (hidden_state, cell_state))
         outputs = outputs[-1]  # [batch_size, num_hidden]
         model = torch.mm(outputs, self.W) + self.b  # model : [batch_size, n_class]
         return model

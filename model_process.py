@@ -34,13 +34,11 @@ def train_epoch(
     batch_count = 0
 
     for batch_idx, batch in enumerate(tqdm(training_data, mininterval=2, leave=False)):
-        batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
-            lambda x: x.to(device), batch
-        )
+        print(batch)
+        batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(lambda x: x.to(device), batch)
         gold_as = batch_as[:, 1:]
 
         optimizer.zero_grad()
-
         pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
 
         loss, n_correct = compute_performance(pred_as, gold_as, smoothing=True)
@@ -322,7 +320,6 @@ def predict(generator, data, device, max_predictions=None):
     for batch_idx, batch in enumerate(data):
         if cur == 0:
             break
-
         batch_qs, batch_qs_pos = map(lambda x: x.to(device), batch)
         all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
 
