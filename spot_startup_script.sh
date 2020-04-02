@@ -4,11 +4,11 @@
 
 echo "Running startup script"
 
-gsutil cp gs://math-checkpoints-data/hs-math-nlp-master.zip math.zip
+wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 
-unzip math.zip
+unzip master.zip
 
-cd hs-math-nlp-master
+cd master
 
 gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
 
