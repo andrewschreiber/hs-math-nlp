@@ -2,7 +2,7 @@
 
 echo "Running startup script"
 
-cd /hs-math-nlp-master
+cd /home/andrew_schreiber1/hs-math-nlp-master
 
 pip install --user tensorboard tensorboardX
 
