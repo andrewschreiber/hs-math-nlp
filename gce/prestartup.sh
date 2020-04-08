@@ -8,8 +8,9 @@ unzip master.zip
 
 cd hs-math-nlp-master && ls
 
-# echo "Sleeping for 10s for install"
-# sleep 60
+gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
+
+tar xvzf dataset.zip
 
 chmod +x gce/startup.sh
 
