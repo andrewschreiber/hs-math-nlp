@@ -91,7 +91,7 @@ if __name__ == "__main__":
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "3-24-20_0_test"
+    unique_id = "4-8-20_0_test"
 
     model = utils.build_transformer()
 
