@@ -1,18 +1,6 @@
 #!/bin/bash
 
-# Assumes the latest github version is synced to the bucket
-
-echo "Running startup script"
-
-# ./opt/c2d/c2d-startup
-
-sudo su -
-
-wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
-
-unzip master.zip
-
-cd hs-math-nlp-master && ls
+print("Running startup script")
 
 # gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
 
