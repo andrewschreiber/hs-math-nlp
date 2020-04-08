@@ -2,6 +2,8 @@
 
 echo "Running prestartup script..."       
 
+sleep 20
+
 cd /home/andrew_schreiber1
 
 wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
