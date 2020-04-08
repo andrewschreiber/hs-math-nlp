@@ -8,8 +8,8 @@ unzip master.zip
 
 cd hs-math-nlp-master && ls
 
-echo "Sleeping for 60s"
-sleep 60
+echo "Sleeping for 20s for install"
+sleep 20
 
 chmod +x gce/startup.sh
 bash gce/startup.sh

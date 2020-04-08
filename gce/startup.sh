@@ -1,6 +1,6 @@
 #!/bin/bash
 
-print("Running startup script")
+echo "Running startup script"
 
 # gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
 
