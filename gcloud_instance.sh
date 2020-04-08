@@ -29,7 +29,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --machine-type=$INSTANCE_TYPE \
-        --boot-disk-size=50GB \
+        --boot-disk-size=200GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
         --scopes storage-rw \
@@ -48,7 +48,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --machine-type=$INSTANCE_TYPE \
-        --boot-disk-size=50GB \
+        --boot-disk-size=200GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
         --scopes storage-rw \
