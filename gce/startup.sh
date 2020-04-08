@@ -8,7 +8,7 @@ wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 
 unzip master.zip
 
-cd master
+cd hs-math-nlp-master && ls
 
 gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
 
@@ -16,6 +16,6 @@ tar xvzf dataset.zip
 
 pip install --user tensorboard tensorboardX
 
-python training.py
+python3 training.py
 
 echo "Completed startup script"

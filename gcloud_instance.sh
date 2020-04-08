@@ -17,8 +17,9 @@
 
 export IMAGE_FAMILY="pytorch-latest-cpu" \
 export ZONE="us-west1-b" \
-export INSTANCE_NAME="my-fastai-instance-B" \
-export INSTANCE_TYPE="n1-highmem-8"
+export INSTANCE_NAME="my-fastai-instance-c" \
+export INSTANCE_TYPE="n1-highmem-8" \
+export PROJECT="hs-math-nlp"
 
 
 # Dummy instance
@@ -31,7 +32,12 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw 
+        --scopes storage-rw \
+        --metadata-from-file startup-script=gce/startup.sh 
+
+
+# Tail logs
+watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -n $(($LINES - 2))"        
 
 # Create your preemptible instance template
 gcloud beta compute --project=hs-math-nlp instance-templates create template-math 
