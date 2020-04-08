@@ -13,7 +13,7 @@ sleep 60
 
 chmod +x gce/startup.sh
 
-su - andrew_schreiber1 -c 'gce/startup.sh'
+su - andrew_schreiber1 -c '/hs-math-nlp-master/gce/startup.sh'
 
 # andrew_schreiber1
 # bash gce/startup.sh
