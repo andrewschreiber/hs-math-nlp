@@ -2,13 +2,19 @@
 
 echo "~~~~~~~ Running shutdown script ~~~~~~~"
 
-preempted = curl "http://metadata.google.internal/computeMetadata/v1/instance/preempted" -H "Metadata-Flavor: Google"
+PID="$(pgrep -o "python")"
+# if [[ PID -ne 0 ]]; then
+#   echo "Python not running, shutting down immediately."
+#   exit 0
+# fi
+
+curl "http://metadata.google.internal/computeMetadata/v1/instance/preempted" -H "Metadata-Flavor: Google"
+preempted=$?
 
 echo "Got preempted: $preempted"
 
 if $preempted; then
   echo "Detected pre-emption"
-  PID="$(pgrep -o "python")"
 
   echo "Send SIGTERM to python PID $PID"
   kill "$PID"
