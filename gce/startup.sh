@@ -10,12 +10,14 @@ echo "Running startup script"
 
 # python3 training.py
 
+cd /hs-math-nlp-master
+
 python --version
 
-python3 --version
+python gce/print.py
 
-pip freeze
+echo "try unbuffered"
 
-python3 -u gce/print.py
+python -u gce/print.py
 
 echo "Completed startup script"
