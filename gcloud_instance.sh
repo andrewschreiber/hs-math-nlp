@@ -29,16 +29,22 @@ gcloud compute instances create $INSTANCE_NAME \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --machine-type=$INSTANCE_TYPE \
-        --boot-disk-size=200GB \
+        --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw, cloud-platform \
-        --metadata-from-file startup-script=gce/startup.sh, shutdown-script=gce/shutdown.sh
+        --scopes storage-rw,cloud-platform \
+        --metadata-from-file startup-script=gce/startup.sh,shutdown-script=gce/shutdown.sh
 
 
 # Tail logs
 watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
 
+
+
+gcloud compute project-info add-metadata \
+    --metadata serial-port-enable=TRUE
+
+gcloud compute connect-to-serial-port $INSTANCE_NAME
 
 
 export INSTANCE_NAME="my-fastai-instance-l" && \
@@ -48,7 +54,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --machine-type=$INSTANCE_TYPE \
-        --boot-disk-size=200GB \
+        --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
         --scopes storage-rw, cloud-platform \
