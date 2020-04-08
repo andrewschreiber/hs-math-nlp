@@ -32,8 +32,8 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=200GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw \
-        --metadata-from-file startup-script=gce/startup.sh 
+        --scopes storage-rw, cloud-platform \
+        --metadata-from-file startup-script=gce/startup.sh, shutdown-script=gce/shutdown.sh
 
 
 # Tail logs
@@ -51,7 +51,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=200GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw \
+        --scopes storage-rw, cloud-platform \
         --metadata-from-file startup-script=gce/prestartup.sh \
 && watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
 
