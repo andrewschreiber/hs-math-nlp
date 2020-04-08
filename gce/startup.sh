@@ -4,6 +4,10 @@
 
 echo "Running startup script"
 
+# ./opt/c2d/c2d-startup
+
+sudo su -
+
 wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 
 unzip master.zip
@@ -21,6 +25,8 @@ cd hs-math-nlp-master && ls
 python --version
 
 python3 --version
+
+pip freeze
 
 python3 -u gce/print.py
 
