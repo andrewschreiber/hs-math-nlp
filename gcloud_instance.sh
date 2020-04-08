@@ -17,7 +17,7 @@
 
 export IMAGE_FAMILY="pytorch-latest-cpu" \
 export ZONE="us-west1-b" \
-export INSTANCE_NAME="my-fastai-instance" \
+export INSTANCE_NAME="my-fastai-instance-B" \
 export INSTANCE_TYPE="n1-highmem-8"
 
 
