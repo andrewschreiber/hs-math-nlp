@@ -2,9 +2,6 @@
 
 echo "Running prestartup script..."       
 
-sleep 20
-
-# cd /home/andrew_schreiber1
 
 wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 
@@ -18,7 +15,6 @@ tar xvzf dataset.zip
 
 cd .. 
 
-sudo chmod -R 755 hs-math-nlp-master
+sudo chmod -R 777 hs-math-nlp-master
 
-# su - andrew_schreiber1 -c '/hs-math-nlp-master/gce/startup.sh'
-su - -c '/hs-math-nlp-master/gce/startup.sh'
+su - andrew_schreiber1 -c '/hs-math-nlp-master/gce/startup.sh'

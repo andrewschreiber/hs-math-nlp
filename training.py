@@ -28,6 +28,7 @@ import signal
 
 
 if __name__ == "__main__":
+    print("Beginning training...")
     if utils.is_spot_instance():
         signal.signal(signal.SIGTERM, utils.sigterm_handler)
 
