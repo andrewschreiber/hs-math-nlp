@@ -18,4 +18,8 @@ tar xvzf dataset.zip
 
 chmod +x gce/startup.sh
 
+cd .. 
+
+sudo chmod -R 757 hs-math-nlp-master
+
 su - andrew_schreiber1 -c '/home/andrew_schreiber1/hs-math-nlp-master/gce/startup.sh'
