@@ -198,7 +198,7 @@ if __name__ == "__main__":
         training_data=train_loader,
         optimizer=optimizer,
         device=device,
-        epochs=10,  # Not relevant, will get ended before this due to max_b
+        epochs=1000,  # Not relevant, will get ended before this due to max_b
         tb=tb,
         run_max_batches=run_max_batches,
         validation_data=None,
