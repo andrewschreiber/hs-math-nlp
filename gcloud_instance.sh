@@ -21,8 +21,12 @@ export INSTANCE_NAME="my-fastai-instance-e" \
 export INSTANCE_TYPE="n1-highmem-8" \
 export PROJECT="hs-math-nlp"
 
+# Settings (only needed once per project)
+gcloud compute project-info add-metadata \
+    --metadata serial-port-enable=TRUE
 
-# Dummy instance
+# Quick retesting dummy instance
+export INSTANCE_NAME="startup-test-p" && \
 gcloud compute instances create $INSTANCE_NAME \
         --zone=$ZONE \
         --image-family=$IMAGE_FAMILY \
@@ -32,17 +36,9 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw,cloud-platform \
-        --metadata-from-file startup-script=gce/startup.sh,shutdown-script=gce/shutdown.sh
-
-
-# Tail logs
-watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
-
-
-
-gcloud compute project-info add-metadata \
-    --metadata serial-port-enable=TRUE
+        --scopes storage-rw \
+        --metadata-from-file="startup-script=gce/startup.sh,shutdown-script=gce/shutdown.sh" \
+&& gcloud compute connect-to-serial-port $INSTANCE_NAME
 
 gcloud compute connect-to-serial-port $INSTANCE_NAME
 
@@ -57,7 +53,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw, cloud-platform \
+        --scopes storage-rw \
         --metadata-from-file startup-script=gce/prestartup.sh \
 && watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
 
