@@ -3,8 +3,8 @@
 
 echo "~~~~~~~ Running shutdown script ~~~~~~~"
 
-OLD_PID="$(pgrep -o "python")"
-NEW_PID="$(pgrep -n "python")"
+OLD_PID=$(pgrep -o "python")
+# NEW_PID=$(pgrep -n "python")
 
 # curl "http://metadata.google.internal/computeMetadata/v1/instance/preempted" -H "Metadata-Flavor: Google"
 # preempted=$?
@@ -16,12 +16,12 @@ NEW_PID="$(pgrep -n "python")"
 
 echo "Send SIGTERM to python OLD_PID $OLD_PID"
 kill $OLD_PID
-if [ "$OLD_PID" != "$NEW_PID" ]; then
-  echo "Send SIGTERM to python NEW_PID $NEW_PID"
-  kill $NEW_PID
-fi
+# if [ "$OLD_PID" != "$NEW_PID" ]; then
+#   echo "Send SIGTERM to python NEW_PID $NEW_PID"
+#   kill $NEW_PID
+# fi
 
-echo "SIGTERMs sent"
+echo "SIGTERM sent"
 
   # Give the python script as much time as possible to cleanup
 while true; do echo 'Keep Alive'; sleep 1; done
