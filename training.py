@@ -29,6 +29,10 @@ import signal
 
 if __name__ == "__main__":
     print("Beginning training...")
+    f = open("testing_file_writing.txt", "w+")
+    for i in range(10):
+        f.write("This is line %d\r\n" % (i + 1))
+    f.close()
     if utils.is_spot_instance():
         signal.signal(signal.SIGTERM, utils.sigterm_handler)
         print("Sigterm handler setup")
