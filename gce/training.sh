@@ -9,6 +9,6 @@ pip install --user tensorboard tensorboardX
 python --version
 echo "~~~~~~~ Start training ~~~~~~~"
 
-python -u training.py
+nohup python -u training.py &
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
