@@ -4,7 +4,7 @@ echo "~~~~~~~ Running prestartup.sh ~~~~~~~~"
 
 # TODO: Find better way than favorable race condition to do this.
 echo "Sleeping to wait for creation of user directory"
-sleep 45
+sleep 5
 
 # We need to use the user account, as root does not have imaged python packages
 # Important to put things in the correct folder and chmod for permissions

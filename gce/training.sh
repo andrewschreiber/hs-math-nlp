@@ -9,6 +9,8 @@ pip install --user tensorboard tensorboardX
 python --version
 echo "~~~~~~~ Start training ~~~~~~~"
 
-nohup python -u training.py &
+# Nohup + & allow the python execution to run async
+# Key because preemption will insta-kill the startup script
+nohup python training.py &
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
