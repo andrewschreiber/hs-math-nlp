@@ -13,6 +13,6 @@ echo "~~~~~~~ Start training ~~~~~~~"
 # Key because preemption will insta-kill the startup script
 # nohup python training.py &
 
-echo "python training.py" | at now + 10 seconds
+echo "python training.py" | at now + 1 minute
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
