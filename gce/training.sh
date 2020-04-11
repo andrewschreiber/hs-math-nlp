@@ -11,6 +11,8 @@ echo "~~~~~~~ Start training ~~~~~~~"
 
 # Nohup + & allow the python execution to run async
 # Key because preemption will insta-kill the startup script
-nohup python training.py &
+# nohup python training.py &
+
+echo "python training.py" | at now + 10 seconds
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
