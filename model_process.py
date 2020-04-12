@@ -87,10 +87,6 @@ def train_epoch(
             print(
                 f"Preemption at end of Epoch batch: {batch_idx} and Run batch: {run_batch_count}. Breaking from epoch."
             )
-            f = open(f"testing_batch{batch_idx}_epoch{epoch}_preemption.txt", "w+")
-            for i in range(10):
-                f.write("This is line %d\r\n" % (i + 1))
-            f.close()
             break
 
     loss_per_char = total_loss / n_char_total
