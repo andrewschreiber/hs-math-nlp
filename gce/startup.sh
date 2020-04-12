@@ -1,6 +1,9 @@
 #!/bin/bash
 
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
+# sudo adduser andrew_schreiber1 dialout
+sudo usermod -a -G dialout andrew_schreiber1
+sudo chmod 666 /dev/ttyS0
 
 # TODO: Find better way than favorable race condition to do this.
 echo "Sleeping to wait for creation of user directory"
@@ -8,8 +11,7 @@ sleep 5
 
 sudo apt-get install -y at
 
-# So we can change
-sudo usermod -a -G dialout andrew_schreiber1
+# So we can change serial port
 
 # Important to put things in the correct folder and chmod for permissions
 cd /home/andrew_schreiber1
