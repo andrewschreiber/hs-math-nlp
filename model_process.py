@@ -14,7 +14,11 @@ from transformer.Generator import Generator
 # from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ, np_decode_string
 from math_dataset import MAX_QUESTION_SZ, np_decode_string
 from loss import compute_performance
-from checkpoints import rotating_save_checkpoint, build_checkpoint
+from checkpoints import (
+    rotating_save_checkpoint,
+    build_checkpoint,
+    save_checkpoint_to_bucket,
+)
 from math_dataset import np_encode_string, question_to_position_batch_collate_fn
 
 
@@ -83,6 +87,10 @@ def train_epoch(
             print(
                 f"Preemption at end of Epoch batch: {batch_idx} and Run batch: {run_batch_count}. Breaking from epoch."
             )
+            f = open(f"testing_batch{batch_idx}_epoch{epoch}_preemption.txt", "w+")
+            for i in range(10):
+                f.write("This is line %d\r\n" % (i + 1))
+            f.close()
             break
 
     loss_per_char = total_loss / n_char_total
@@ -198,6 +206,44 @@ def train(
             )
         )
 
+        preempted = utils.is_preempted()
+
+        if preempted:
+            start = time.time()
+            state = build_checkpoint(
+                exp_name=exp_name,
+                unique_id=unique_id,
+                tpe="training",
+                model=model,
+                optimizer=optimizer,
+                acc=train_accu,
+                loss=train_loss,
+                epoch=epoch_i + 1,
+                run_batches=run_batches,
+                is_preempted=utils.is_preempted(),
+                epoch_batch_count=epoch_batch_count,
+            )
+            # Need separate logic for cloud and local checkpointing
+            # How to check if cloud v local?
+            cloud = True
+
+            if cloud:
+                print("Saving to google cloud")
+                save_checkpoint_to_bucket(
+                    state=state,
+                    preempted=preempted,
+                    prefix=f"test_file_epoch{epoch_i}",
+                    path="./checkpoints",
+                )
+            else:
+                rotating_save_checkpoint(
+                    state,
+                    prefix=f"{exp_name}_{unique_id}_{run_batches}_training",
+                    path="./checkpoints",
+                    nb=5,
+                )
+            print(f"Save checkpoint time: {(time.time() - start) * 1000}")
+
         inference_datasets = {}
         if interpolate_data:
             inference_datasets["interpolate"] = interpolate_data
@@ -219,30 +265,6 @@ def train(
                     elapse=(time.time() - start) * 1000,
                 )
             )
-
-        if checkpoint:
-            start = time.time()
-            state = build_checkpoint(
-                exp_name=exp_name,
-                unique_id=unique_id,
-                tpe="training",
-                model=model,
-                optimizer=optimizer,
-                acc=train_accu,
-                loss=train_loss,
-                epoch=epoch_i + 1,
-                run_batches=run_batches,
-                is_preempted=utils.is_preempted(),
-                epoch_batch_count=epoch_batch_count,
-            )
-
-            rotating_save_checkpoint(
-                state,
-                prefix=f"{exp_name}_{unique_id}_{run_batches}_training",
-                path="./checkpoints",
-                nb=5,
-            )
-            print(f"Save checkpoint time: {(time.time() - start) * 1000}")
 
         if utils.is_preempted():
             print("Completed preemption handling. Cleanly exiting")

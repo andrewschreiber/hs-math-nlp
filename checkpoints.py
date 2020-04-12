@@ -1,10 +1,30 @@
 import os
 from pathlib import Path
+from google.cloud import storage
+
 
 # import copy
 import torch
 
 # import glob
+
+BUCKET_NAME = "math-checkpoints-data"
+
+
+def save_checkpoint_to_bucket(state, preempted, prefix, path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    filename = Path(path) / f"{prefix}.pth"
+    torch.save(state, filename)
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(prefix)
+
+    blob.upload_from_filename(filename)
+
+    print(f"File {filename} uploaded to {prefix}.")
 
 
 def rotating_save_checkpoint(state, prefix, path="./checkpoints", nb=5):

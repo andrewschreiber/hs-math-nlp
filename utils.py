@@ -37,11 +37,6 @@ def is_preempted():
 
 def sigterm_handler(sig, frame):
     print("Got SIGTERM. Setting `IS_PREEMPTED` to true.")
-    f = open("testing_preemption.txt", "w+")
-    for i in range(10):
-        f.write("This is line %d\r\n" % (i + 1))
-    f.close()
-
     os.environ["IS_PREEMPTED"] = "TRUE"
 
 
