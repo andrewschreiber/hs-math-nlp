@@ -4,6 +4,7 @@ echo "~~~~~~~ Running startup.sh ~~~~~~~"
 
 cd /home/andrew_schreiber1/hs-math-nlp-master
 
+sudo apt-get install at
 pip install --user tensorboard tensorboardX
 
 python --version

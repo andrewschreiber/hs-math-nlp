@@ -17,8 +17,6 @@ unzip master.zip
 
 sudo chmod -R 777 hs-math-nlp-master
 
-sudo apt-get install at
-
 cd hs-math-nlp-master
 
 # gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
