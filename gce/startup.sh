@@ -8,6 +8,9 @@ sleep 5
 
 sudo apt-get install -y at
 
+# So we can change
+sudo usermod -a -G dialout andrew_schreiber1
+
 # Important to put things in the correct folder and chmod for permissions
 cd /home/andrew_schreiber1
 

@@ -15,6 +15,6 @@ tty
 # Needed because preemption will insta-kill the startup script
 # nohup still runs under startup script
 
-echo "python training.py" >  /dev/pts/0 | at now
+echo "python training.py" >  /dev/ttyS0 | at now
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
