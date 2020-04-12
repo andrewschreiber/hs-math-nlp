@@ -219,11 +219,8 @@ def train(
                 is_preempted=utils.is_preempted(),
                 epoch_batch_count=epoch_batch_count,
             )
-            # Need separate logic for cloud and local checkpointing
-            # How to check if cloud v local?
-            cloud = True
 
-            if cloud:
+            if utils.is_cloud():
                 print("Saving to google cloud")
                 save_checkpoint_to_bucket(
                     state=state,

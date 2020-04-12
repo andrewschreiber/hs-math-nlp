@@ -43,3 +43,8 @@ def sigterm_handler(sig, frame):
 def is_spot_instance():
     # TODO: Find os.environ flag / metadata request to check
     return True
+
+
+def is_cloud():
+    # TODO: Find os.environ flag / metadata request to check
+    return True

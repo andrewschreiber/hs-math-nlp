@@ -1,30 +1,37 @@
 import os
 from pathlib import Path
 from google.cloud import storage
-
-
-# import copy
 import torch
-
-# import glob
 
 BUCKET_NAME = "math-checkpoints-data"
 
 
-def save_checkpoint_to_bucket(state, preempted, prefix, path):
+def save_checkpoint_to_bucket(state, preempted, exp, path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    filename = Path(path) / f"{prefix}.pth"
-    torch.save(state, filename)
+    filename = f"{exp}_latest_checkpoint.pth"
+
+    filepath = Path(path) / filename
+    torch.save(state, filepath)
 
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
-    blob = bucket.blob(prefix)
+    blob = bucket.blob(filename)
 
-    blob.upload_from_filename(filename)
+    blob.upload_from_filename(filepath)
 
-    print(f"File {filename} uploaded to {prefix}.")
+    print(f"File {filename} uploaded to {filepath}.")
+
+
+def load_latest_checkpoint_from_bucket(exp, model, optimizer):
+    source_blob_name = f"{exp}_latest_checkpoint.pth"
+    destination_file_name = Path(".") / source_blob_name
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+    return restore_checkpoint(destination_file_name, model, optimizer)
 
 
 def rotating_save_checkpoint(state, prefix, path="./checkpoints", nb=5):
@@ -82,6 +89,10 @@ def build_checkpoint(
 def restore_checkpoint(filename, model=None, optimizer=None):
     """restores checkpoint state from filename and load in model and optimizer if provided"""
     print(f"Extracting state from {filename}")
+    if not os.path.exists(filename):
+        print("No checkpoint file found")
+        return None
+
     if torch.device == "cuda":
         state = torch.load(filename)
     else:

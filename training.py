@@ -1,7 +1,7 @@
 # import checkpoints
 # from tensorboard_utils import tensorboard_event_accumulator
 from tensorboard_utils import Tensorboard
-from checkpoints import restore_checkpoint
+from checkpoints import restore_checkpoint, load_latest_checkpoint_from_bucket
 import utils
 import model_process
 import random
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     start_epoch = 0
     print("Start epoch:", start_epoch)
 
-    should_restore_checkpoint = False
+    should_restore_checkpoint = True
     print("Should restore checkpoint:", should_restore_checkpoint)
 
     deterministic = True
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "4-8-20_0_test"
+    unique_id = "4-12-20_0_test"
 
     model = utils.build_transformer()
 
@@ -107,26 +107,34 @@ if __name__ == "__main__":
     start_batch = 0
 
     if should_restore_checkpoint:
-        state = restore_checkpoint(
-            "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
-            model=model,
-            optimizer=optimizer,
-        )
-        epoch = state["epoch"]
-        best_acc = state["acc"]
-        best_loss = state["loss"]
+        if utils.is_cloud():
+            state = load_latest_checkpoint_from_bucket(
+                exp=exp_name + unique_id, model=model, optimizer=optimizer
+            )
+        else:
+            state = restore_checkpoint(
+                "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
+                model=model,
+                optimizer=optimizer,
+            )
 
-        start_batch = state.get("start_batch", None) or 0
-        # Need to move optimizer state to GPU memory
-        if torch.cuda.is_available():
-            for state in optimizer.state.values():
-                for k, v in state.items():
-                    if torch.is_tensor(v):
-                        state[k] = v.cuda()
+        if state is not None:
+            epoch = state["epoch"]
+            best_acc = state["acc"]
+            best_loss = state["loss"]
 
-        print("epoch", epoch)
-        print("best_acc", best_acc)
-        print("best_loss", best_loss)
+            start_batch = state.get("start_batch", None) or 0
+            # Need to move optimizer state to GPU memory
+            if torch.cuda.is_available():
+                for state in optimizer.state.values():
+                    for k, v in state.items():
+                        if torch.is_tensor(v):
+                            state[k] = v.cuda()
+
+            print("epoch", epoch)
+            print("best_acc", best_acc)
+            print("best_loss", best_loss)
+            print("Loaded checkpoint successfully")
 
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")

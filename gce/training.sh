@@ -4,7 +4,6 @@ echo "~~~~~~~ Running training.sh ~~~~~~~"
 
 cd /home/andrew_schreiber1/hs-math-nlp-master
 
-sudo apt-get install -y at
 pip install --user tensorboard tensorboardX
 
 python --version
