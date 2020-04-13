@@ -1,7 +1,9 @@
 #!/bin/bash
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
+sudo usermod -a -G dialout andrew_schreiber1
 
 # TODO: Find better way than favorable race condition to do this.
+
 echo "Sleeping to wait for creation of user directory"
 sleep 1
 sudo apt-get install -y at
@@ -14,7 +16,6 @@ wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 unzip master.zip
 
 sudo chmod -R 777 hs-math-nlp-master
-sudo adduser andrew_schreiber1 dialout
 
 cd hs-math-nlp-master
 
