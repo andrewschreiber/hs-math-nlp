@@ -40,7 +40,13 @@ def train_epoch(
     n_char_correct = 0
 
     for batch_idx, batch in enumerate(
-        tqdm(training_data, mininterval=2, leave=False, dynamic_ncols=True),
+        tqdm(
+            training_data,
+            mininterval=2,
+            leave=False,
+            disable=utils.is_cloud(),
+            dynamic_ncols=True,
+        ),
         start=start_batch,
     ):
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
@@ -246,7 +252,7 @@ def train(
                 save_checkpoint_to_bucket(
                     state=state,
                     preempted=utils.is_preempted(),
-                    prefix=f"test_file_epoch{epoch_i}",
+                    exp=f"test_file_epoch{epoch_i}",
                     path="./checkpoints",
                 )
             else:
