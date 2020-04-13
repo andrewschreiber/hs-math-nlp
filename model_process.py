@@ -2,6 +2,7 @@ import time
 import math
 from tqdm import tqdm  # tqdm_notebook as tqdm
 import numpy as np
+import os
 import torch
 from torch.utils import data
 import utils
@@ -268,6 +269,14 @@ def train(
                 sys.exit(0)
 
         training_data.dataset.shuffleData()
+
+    print("Completed training. Saving final model")
+
+    if utils.is_cloud():
+        print("Shutting down instance")
+        # TODO: Enable cloud-platform scope so this works
+        # Need to fix shutdown-script metadata swap though
+        os.system("sudo shutdown -h now")
 
 
 def predict(generator, data, device, max_predictions=None):

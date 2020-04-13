@@ -40,6 +40,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --metadata-from-file="startup-script=gce/startup.sh,shutdown-script=gce/shutdown.sh" \
 && gcloud compute connect-to-serial-port $INSTANCE_NAME
 
+# TODO: Find command for enabling project-wide serial port
 # Exit serial port by typing: ~.
 
 gcloud compute connect-to-serial-port $INSTANCE_NAME
