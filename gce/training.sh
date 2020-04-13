@@ -19,6 +19,6 @@ echo "~~~~~~~ Start training ~~~~~~~"
 
 # /dev/ttyS0 is blocked on GCP, but /dev/ttyS1 can be written to
 # Logs to serial 2: gcloud compute connect-to-serial-port $INSTANCE_NAME --port 2
-python training.py > /var/ttyS1 | at now
+echo "python training.py" > /var/ttyS1 | at now
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
