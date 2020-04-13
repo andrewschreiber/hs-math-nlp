@@ -274,8 +274,6 @@ def train(
 
     if utils.is_cloud():
         print("Shutting down instance")
-        # TODO: Enable cloud-platform scope so this works
-        # Need to fix shutdown-script metadata swap though
         os.system("sudo shutdown -h now")
 
 

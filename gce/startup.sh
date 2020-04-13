@@ -1,18 +1,11 @@
 #!/bin/bash
 
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
-# TODO: Figure out how to get proper permissions for writing to /dev/ttyS0
-# sudo adduser andrew_schreiber1 dialout
-# sudo usermod -a -G dialout andrew_schreiber1
-# sudo chmod +x /dev/ttyS0
 
 # TODO: Find better way than favorable race condition to do this.
 echo "Sleeping to wait for creation of user directory"
-sleep 5
-
+sleep 1
 sudo apt-get install -y at
-
-# So we can change serial port
 
 # Important to put things in the correct folder and chmod for permissions
 cd /home/andrew_schreiber1
@@ -25,6 +18,14 @@ sudo chmod -R 777 hs-math-nlp-master
 
 cd hs-math-nlp-master
 
+# In startup, pytorch-latest-gpu updates metadata to use its shutdown script
+IMAGE_SHUTDOWN_SCRIPT=/opt/deeplearning/bin/shutdown_script.sh
+echo "Appending gce/shutdown.sh to $IMAGE_SHUTDOWN_SCRIPT..."
+
+# Append our shutdown script to it
+sudo cat gce/shutdown.sh >> $IMAGE_SHUTDOWN_SCRIPT
+
+# Full dataset
 # gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
  
 # 10kb dataset for faster testing
