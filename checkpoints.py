@@ -28,9 +28,13 @@ def load_latest_checkpoint_from_bucket(exp, model, optimizer):
     source_blob_name = f"{exp}_latest_checkpoint.pth"
     destination_file_name = Path(".") / source_blob_name
     storage_client = storage.Client()
-    bucket = storage_client.bucket(BUCKET_NAME)
-    blob = bucket.blob(source_blob_name)
-    blob.download_to_filename(destination_file_name)
+    try:
+        bucket = storage_client.bucket(BUCKET_NAME)
+        blob = bucket.blob(source_blob_name)
+        blob.download_to_filename(destination_file_name)
+    except Exception:
+        print(f"No file found in bucket.")
+        return None
     return restore_checkpoint(destination_file_name, model, optimizer)
 
 
