@@ -93,7 +93,7 @@ if __name__ == "__main__":
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "4-12-20_0_test"
+    unique_id = "4-12-20_1_test"
 
     model = utils.build_transformer()
 
@@ -104,8 +104,9 @@ if __name__ == "__main__":
 
     if should_restore_checkpoint:
         if utils.is_cloud():
+            exp = f"{exp_name}_{unique_id}"
             state = load_latest_checkpoint_from_bucket(
-                exp=exp_name + unique_id, model=model, optimizer=optimizer
+                exp=exp, model=model, optimizer=optimizer
             )
         else:
             state = restore_checkpoint(

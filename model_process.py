@@ -252,7 +252,7 @@ def train(
                 save_checkpoint_to_bucket(
                     state=state,
                     preempted=utils.is_preempted(),
-                    exp=f"test_file_epoch{epoch_i}",
+                    exp=f"{exp_name}_{unique_id}",
                     path="./checkpoints",
                 )
             else:

@@ -33,7 +33,7 @@ def load_latest_checkpoint_from_bucket(exp, model, optimizer):
         blob = bucket.blob(source_blob_name)
         blob.download_to_filename(destination_file_name)
     except Exception:
-        print(f"No file found in bucket.")
+        print(f"No file {source_blob_name} found in bucket.")
         return None
     return restore_checkpoint(destination_file_name, model, optimizer)
 
