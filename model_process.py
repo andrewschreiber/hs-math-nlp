@@ -240,7 +240,8 @@ def train(
                         elapse=(time.time() - start) * 1000,
                     )
                 )
-        if utils.is_preempted() or interrupted_batch is not None:  # TODO: Or checkpoint
+        if utils.is_preempted():  # or interrupted_batch is not None
+            # TODO: Or checkpoint. Must add different naming logic.
             print("Building checkpoint..")
             start = time.time()
             state = build_checkpoint(
