@@ -189,7 +189,7 @@ def train(
         )
 
         start = time.time()
-        train_loss, train_accu, epoch_batch_count = train_epoch(
+        train_loss, train_accu, new_batch_count = train_epoch(
             model=model,
             training_data=training_data,
             optimizer=optimizer,
@@ -201,7 +201,7 @@ def train(
             run_batch_count=run_batches,
             start_batch=start_batch,
         )
-        # run_batches += epoch_batch_count
+        run_batches = new_batch_count
 
         print(
             "[Training]  loss: {train_loss}, ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
