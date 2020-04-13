@@ -178,7 +178,9 @@ def train(
     checkpoint=True,
 ):
     print("~~~ Beginning Training ~~~~")
-    print(f"Start epoch: {start_epoch}, Start batch: {start_batch}")
+    print(
+        f"Start epoch: {start_epoch}, Start batch: {start_batch}, Max batch: {run_max_batches}"
+    )
 
     run_batches = 0
 
