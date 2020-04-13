@@ -202,9 +202,30 @@ def train(
             )
         )
 
-        preempted = utils.is_preempted()
+        if not utils.is_preempted():
+            inference_datasets = {}
+            if interpolate_data:
+                inference_datasets["interpolate"] = interpolate_data
+            if extrapolate_data:
+                inference_datasets["extrapolate"] = extrapolate_data
 
-        if preempted:
+            for group, dataset in inference_datasets.items():
+                start = time.time()
+                inference_loss, inference_acc = inference_epoch(
+                    model, dataset, device, epoch_i, group, tb, log_interval,
+                )
+                print(
+                    "[{group}]  loss: {inference_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
+                    "elapse: {elapse:3.3f}ms".format(
+                        group=group,
+                        inference_loss=inference_loss,
+                        ppl=math.exp(min(inference_loss, 100)),
+                        accu=100 * inference_acc,
+                        elapse=(time.time() - start) * 1000,
+                    )
+                )
+        if utils.preempted:  # TODO: Or checkpoint
+            print("Building checkpoint..")
             start = time.time()
             state = build_checkpoint(
                 exp_name=exp_name,
@@ -221,10 +242,10 @@ def train(
             )
 
             if utils.is_cloud():
-                print("Saving to google cloud")
+                print("Saving to google cloud..")
                 save_checkpoint_to_bucket(
                     state=state,
-                    preempted=preempted,
+                    preempted=utils.is_preempted(),
                     prefix=f"test_file_epoch{epoch_i}",
                     path="./checkpoints",
                 )
@@ -236,35 +257,11 @@ def train(
                     nb=5,
                 )
             print(f"Save checkpoint time: {(time.time() - start) * 1000}")
-
-        inference_datasets = {}
-        if interpolate_data:
-            inference_datasets["interpolate"] = interpolate_data
-        if extrapolate_data:
-            inference_datasets["extrapolate"] = extrapolate_data
-
-        for group, dataset in inference_datasets.items():
-            start = time.time()
-            inference_loss, inference_acc = inference_epoch(
-                model, dataset, device, epoch_i, group, tb, log_interval,
-            )
-            print(
-                "[{group}]  loss: {inference_loss},  ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
-                "elapse: {elapse:3.3f}ms".format(
-                    group=group,
-                    inference_loss=inference_loss,
-                    ppl=math.exp(min(inference_loss, 100)),
-                    accu=100 * inference_acc,
-                    elapse=(time.time() - start) * 1000,
-                )
-            )
-
-        if utils.is_preempted():
-            print("Completed preemption handling. Cleanly exiting")
-            sys.exit(0)
+            if utils.is_preempted():
+                print("Completed preemption handling. Cleanly exiting.")
+                sys.exit(0)
 
         training_data.dataset.shuffleData()
-        # See git history for validation & interpolation set handling
 
 
 def predict(generator, data, device, max_predictions=None):

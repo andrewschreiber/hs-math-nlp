@@ -16,6 +16,7 @@ echo "~~~~~~~ Start training ~~~~~~~"
 # TODO: Figure out how to get python to report to /dev/ttyS0
 # echo "python training.py" > /dev/ttyS0 | at now
 
+# Will write logs to /var/spool/mail/andrew_schreiber1
 echo "python training.py" | at now
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"

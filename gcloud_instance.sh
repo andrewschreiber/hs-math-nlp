@@ -40,6 +40,8 @@ gcloud compute instances create $INSTANCE_NAME \
         --metadata-from-file="startup-script=gce/startup.sh,shutdown-script=gce/shutdown.sh" \
 && gcloud compute connect-to-serial-port $INSTANCE_NAME
 
+# Exit serial port by typing: ~.
+
 gcloud compute connect-to-serial-port $INSTANCE_NAME
 
 
@@ -56,8 +58,6 @@ gcloud compute instances create $INSTANCE_NAME \
         --scopes storage-rw \
         --metadata-from-file startup-script=gce/prestartup.sh \
 && watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
-
-
 
 
 
