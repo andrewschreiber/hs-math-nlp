@@ -35,6 +35,9 @@ def train_epoch(
     run_batch_count=0,
     start_batch=0,
 ):
+    if start_batch != 0:
+        print(f"Training within batch {start_batch}")
+
     model.train()
     total_loss = 0
     n_char_total = 0
@@ -46,7 +49,7 @@ def train_epoch(
             mininterval=2,
             leave=False,
             disable=utils.is_cloud(),
-            dynamic_ncols=True,
+            dynamic_ncols=not utils.is_cloud(),
         ),
         start=start_batch,
     ):
@@ -175,6 +178,7 @@ def train(
     checkpoint=True,
 ):
     print("~~~ Beginning Training ~~~~")
+    print(f"Start epoch: {start_epoch}, start batch: {start_batch}")
 
     run_batches = 0
 
@@ -242,7 +246,7 @@ def train(
                 optimizer=optimizer,
                 acc=train_accu,
                 loss=train_loss,
-                epoch=epoch_i + 1,
+                epoch=epoch_i,
                 run_batches=run_batches,
                 is_preempted=utils.is_preempted(),
                 epoch_batch_count=epoch_batch_count,
