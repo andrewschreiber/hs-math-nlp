@@ -178,12 +178,12 @@ def train(
     checkpoint=True,
 ):
     print("~~~ Beginning Training ~~~~")
-    print(f"Start epoch: {start_epoch}, start batch: {start_batch}")
+    print(f"Start epoch: {start_epoch}, Start batch: {start_batch}")
 
     run_batches = 0
 
     for epoch_i in range(start_epoch, epochs):
-        print("[ Epoch", epoch_i, "]")
+        print(f"[ Epoch: {epoch_i}, Run Batch: {run_batches}]")
         epoch_max_batches_remaining = (
             run_max_batches - run_batches if run_max_batches is not None else None
         )
@@ -274,7 +274,7 @@ def train(
 
         training_data.dataset.shuffleData()
 
-    print("Completed training. Saving final model")
+    print("Completed training")
 
     if utils.is_cloud():
         print("Shutting down instance")

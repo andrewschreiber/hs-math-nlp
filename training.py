@@ -167,7 +167,8 @@ if __name__ == "__main__":
 
     og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
-    run_max_batches = og_datapoint_iterations / batch_size - 2 * 875000  # 2 epochs
+    # run_max_batches = og_datapoint_iterations / batch_size - 2 * 875000  # 2 epochs
+    run_max_batches = 50
 
     print(f"Calculated max batches: {run_max_batches}")
 
