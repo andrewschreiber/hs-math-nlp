@@ -116,7 +116,7 @@ if __name__ == "__main__":
             )
 
         if state is not None:
-            epoch = state["epoch"]
+            start_epoch = state["epoch"]
             best_acc = state["acc"]
             best_loss = state["loss"]
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                         if torch.is_tensor(v):
                             state[k] = v.cuda()
 
-            print("epoch", epoch)
+            print("start_epoch", start_epoch)
             print("best_acc", best_acc)
             print("best_loss", best_loss)
             print("Loaded checkpoint successfully")
