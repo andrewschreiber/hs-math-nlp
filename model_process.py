@@ -42,6 +42,7 @@ def train_epoch(
     total_loss = 0
     n_char_total = 0
     n_char_correct = 0
+    interrupted_batch = None
 
     for batch_idx, batch in enumerate(
         tqdm(
@@ -90,8 +91,9 @@ def train_epoch(
 
         if max_batches is not None and run_batch_count == max_batches:
             print(
-                f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking out of epoch"
+                f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
             )
+            interrupted_batch = batch_idx
             break
         if utils.is_preempted():
             print(
@@ -110,7 +112,7 @@ def train_epoch(
             global_step=epoch,
         )
 
-    return loss_per_char, accuracy, run_batch_count
+    return loss_per_char, accuracy, run_batch_count, interrupted_batch
 
 
 def inference_epoch(model, data, device, epoch, group, tb=None, log_interval=100):
@@ -169,6 +171,7 @@ def train(
     interpolate_data=None,
     start_epoch=0,
     start_batch=0,
+    run_batches=0,
     best_valid_accu=0.0,
     best_valid_loss=float("Inf"),
     best_interpolate_accu=0.0,
@@ -182,16 +185,16 @@ def train(
         f"Start epoch: {start_epoch}, Start batch: {start_batch}, Max batch: {run_max_batches}"
     )
 
-    run_batches = 0
-
     for epoch_i in range(start_epoch, epochs):
-        print(f"[ Epoch: {epoch_i}, Total Batch: {start_batch + run_batches}]")
+        print(
+            f"[ Epoch: {epoch_i} / {epochs}, Total Batch: {start_batch + run_batches} / {run_max_batches}]"
+        )
         epoch_max_batches_remaining = (
             run_max_batches - run_batches if run_max_batches is not None else None
         )
 
         start = time.time()
-        train_loss, train_accu, new_batch_count = train_epoch(
+        train_loss, train_accu, new_batch_count, interrupted_batch = train_epoch(
             model=model,
             training_data=training_data,
             optimizer=optimizer,
@@ -237,7 +240,7 @@ def train(
                         elapse=(time.time() - start) * 1000,
                     )
                 )
-        if utils.is_preempted():  # TODO: Or checkpoint
+        if utils.is_preempted() or interrupted_batch is not None:  # TODO: Or checkpoint
             print("Building checkpoint..")
             start = time.time()
             state = build_checkpoint(
@@ -251,7 +254,7 @@ def train(
                 epoch=epoch_i,
                 run_batches=run_batches,
                 is_preempted=utils.is_preempted(),
-                epoch_batch_count=epoch_batch_count,
+                start_batch=interrupted_batch,
             )
 
             if utils.is_cloud():
@@ -274,9 +277,12 @@ def train(
                 print("Completed preemption handling. Cleanly exiting.")
                 sys.exit(0)
 
+        if interrupted_batch is not None:
+            print(f"Reached max batch. Breaking out of training in epoch {epoch_i}")
+            break
         training_data.dataset.shuffleData()
 
-    print("Completed training")
+    print("~~~~~~ Completed training ~~~~~~")
 
     if utils.is_cloud():
         print("Shutting down instance")

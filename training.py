@@ -119,6 +119,7 @@ if __name__ == "__main__":
             start_epoch = state["epoch"]
             best_acc = state["acc"]
             best_loss = state["loss"]
+            run_batches = state["run_batches"]
 
             start_batch = state.get("start_batch", None) or 0
             # Need to move optimizer state to GPU memory
@@ -214,6 +215,7 @@ if __name__ == "__main__":
         validation_data=None,
         start_epoch=start_epoch,
         start_batch=start_batch,
+        run_batches=run_batches,
         interpolate_data=interpolate_loader,
         extrapolate_data=extrapolate_loader,
         checkpoint=torch.cuda.is_available(),  # Only save on GPUs
