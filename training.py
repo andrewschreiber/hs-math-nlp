@@ -75,6 +75,8 @@ if __name__ == "__main__":
     start_epoch = 0
     print("Start epoch:", start_epoch)
 
+    run_batches = 0
+
     should_restore_checkpoint = True
     print("Should restore checkpoint:", should_restore_checkpoint)
 

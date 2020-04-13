@@ -61,6 +61,7 @@ gcloud compute instances create $INSTANCE_NAME \
 && watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
 
 
+watch -n 2 "cat /var/mail/andrew_schreiber1 | tail -40"
 
 # Create your preemptible instance template
 gcloud beta compute --project=hs-math-nlp instance-templates create template-math 
