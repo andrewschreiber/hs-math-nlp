@@ -1,4 +1,5 @@
-#!/bin/bash
+
+# Readd !/bin/bash if using outside of latest-pytorch-gpu
 # If this doesn't work, make sure your image isn't editing your metadata
 
 echo "~~~~~~~ Running shutdown script ~~~~~~~"
