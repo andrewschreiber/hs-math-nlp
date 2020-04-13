@@ -73,7 +73,7 @@ def build_checkpoint(
     epoch,
     run_batches,
     is_preempted=False,
-    epoch_batch_count=0,
+    start_batch=0,
 ):
     return {
         "exp_name": exp_name,
@@ -86,7 +86,7 @@ def build_checkpoint(
         "epoch": epoch,
         "run_batches": run_batches,
         "is_preempted": is_preempted,
-        "epoch_batch_count": epoch_batch_count,
+        "start_batch": start_batch,
     }
 
 

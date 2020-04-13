@@ -255,7 +255,7 @@ def train(
                 epoch=epoch_i,
                 run_batches=run_batches,
                 is_preempted=utils.is_preempted(),
-                start_batch=interrupted_batch,
+                start_batch=interrupted_batch + 1,
             )
 
             if utils.is_cloud():
