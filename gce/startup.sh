@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
 
 # TODO: Find better way than favorable race condition to do this.
@@ -15,6 +14,7 @@ wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 unzip master.zip
 
 sudo chmod -R 777 hs-math-nlp-master
+sudo chmod 777 /var/ttyS1
 
 cd hs-math-nlp-master
 
