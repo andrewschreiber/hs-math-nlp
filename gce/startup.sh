@@ -14,7 +14,7 @@ wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
 unzip master.zip
 
 sudo chmod -R 777 hs-math-nlp-master
-sudo chmod 777 /var/ttyS1
+sudo adduser andrew_schreiber1 dialout
 
 cd hs-math-nlp-master
 
