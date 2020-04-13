@@ -183,7 +183,7 @@ def train(
     run_batches = 0
 
     for epoch_i in range(start_epoch, epochs):
-        print(f"[ Epoch: {epoch_i}, Run Batch: {run_batches}]")
+        print(f"[ Epoch: {epoch_i}, Total Batch: {start_batch + run_batches}]")
         epoch_max_batches_remaining = (
             run_max_batches - run_batches if run_max_batches is not None else None
         )
@@ -201,7 +201,7 @@ def train(
             run_batch_count=run_batches,
             start_batch=start_batch,
         )
-        run_batches += epoch_batch_count
+        # run_batches += epoch_batch_count
 
         print(
             "[Training]  loss: {train_loss}, ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, "
