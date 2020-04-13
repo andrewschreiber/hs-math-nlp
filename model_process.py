@@ -224,7 +224,7 @@ def train(
                         elapse=(time.time() - start) * 1000,
                     )
                 )
-        if utils.preempted:  # TODO: Or checkpoint
+        if utils.is_preempted():  # TODO: Or checkpoint
             print("Building checkpoint..")
             start = time.time()
             state = build_checkpoint(
