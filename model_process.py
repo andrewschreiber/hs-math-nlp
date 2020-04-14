@@ -207,6 +207,7 @@ def train(
             run_batch_count=run_batches,
             start_batch=start_batch,
         )
+        start_batch = 0
         run_batches = new_batch_count
 
         print(
