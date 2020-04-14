@@ -25,10 +25,10 @@ echo "Appending gce/shutdown.sh to $IMAGE_SHUTDOWN_SCRIPT..."
 sudo cat gce/shutdown.sh >> $IMAGE_SHUTDOWN_SCRIPT
 
 # Full dataset
-# gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
+gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
  
 # 10kb dataset for faster testing
-gsutil cp gs://math-checkpoints-data/mini_mathematics_dataset-v1.0.tar.gz dataset.zip
+# gsutil cp gs://math-checkpoints-data/mini_mathematics_dataset-v1.0.tar.gz dataset.zip
 
 tar xvzf dataset.zip
 
