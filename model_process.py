@@ -23,140 +23,6 @@ from checkpoints import (
 from math_dataset import np_encode_string, question_to_position_batch_collate_fn
 
 
-def train_epoch(
-    model,
-    training_data,
-    optimizer,
-    device,
-    epoch,
-    tb=None,
-    log_interval=100,
-    max_batches=None,
-    run_batch_count=0,
-    start_batch=0,
-):
-    if start_batch != 0:
-        print(f"Training within batch {start_batch}")
-
-    model.train()
-    total_loss = 0
-    n_char_total = 0
-    n_char_correct = 0
-    interrupted_batch = None
-
-    for batch_idx, batch in enumerate(
-        tqdm(
-            training_data,
-            mininterval=2,
-            leave=False,
-            disable=utils.is_cloud(),
-            dynamic_ncols=not utils.is_cloud(),
-        ),
-        start=start_batch,
-    ):
-        batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
-            lambda x: x.to(device), batch
-        )
-        gold_as = batch_as[:, 1:]
-
-        optimizer.zero_grad()
-
-        pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
-
-        loss, n_correct = compute_performance(pred_as, gold_as, smoothing=True)
-        loss.backward()
-
-        # update parameters
-        optimizer.step()
-
-        # note keeping
-        total_loss += loss.item()
-
-        non_pad_mask = gold_as.ne(Constants.PAD)
-        n_char = non_pad_mask.sum().item()
-        n_char_total += n_char
-        n_char_correct += n_correct
-
-        if tb is not None and batch_idx % log_interval == 0:
-            tb.add_scalars(
-                {
-                    "loss_per_char": total_loss / n_char_total,
-                    "accuracy": n_char_correct / n_char_total,
-                },
-                group="train",
-                sub_group="batch",
-                global_step=epoch * len(training_data) + batch_idx,
-            )
-
-        if max_batches is not None and run_batch_count == max_batches:
-            print(
-                f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
-            )
-            interrupted_batch = batch_idx
-            break
-        if utils.is_preempted():
-            print(
-                f"Preemption at end of Epoch batch: {batch_idx} and Run batch: {run_batch_count}. Breaking from epoch."
-            )
-            interrupted_batch = batch_idx
-            break
-        run_batch_count += 1
-
-    loss_per_char = total_loss / n_char_total
-    accuracy = n_char_correct / n_char_total
-
-    if tb is not None:
-        tb.add_scalars(
-            {"loss_per_char": loss_per_char, "accuracy": accuracy},
-            group="train",
-            sub_group="epoch",
-            global_step=epoch,
-        )
-
-    return loss_per_char, accuracy, run_batch_count, interrupted_batch
-
-
-def inference_epoch(model, data, device, epoch, group, tb=None, log_interval=100):
-    model.eval()
-
-    total_loss = 0
-    n_char_total = 0
-    n_char_correct = 0
-
-    with torch.no_grad():
-        for batch_idx, batch in enumerate(tqdm(data, mininterval=2, leave=False)):
-            # prepare data
-            batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
-                lambda x: x.to(device), batch
-            )
-            gold_as = batch_as[:, 1:]
-
-            # forward
-            pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
-            loss, n_correct = compute_performance(pred_as, gold_as, smoothing=False)
-
-            # note keeping
-            total_loss += loss.item()
-
-            non_pad_mask = gold_as.ne(Constants.PAD)
-            n_char = non_pad_mask.sum().item()
-            n_char_total += n_char
-            n_char_correct += n_correct
-
-    loss_per_char = total_loss / n_char_total
-    accuracy = n_char_correct / n_char_total
-
-    if tb is not None:
-        tb.add_scalars(
-            {"loss_per_char": loss_per_char, "accuracy": accuracy},
-            group=group,
-            sub_group="epoch",
-            global_step=epoch,
-        )
-
-    return loss_per_char, accuracy
-
-
 def train(
     exp_name,
     unique_id,
@@ -295,6 +161,140 @@ def train(
     if utils.is_cloud():
         print("Shutting down instance")
         os.system("sudo shutdown -h now")
+
+
+def train_epoch(
+    model,
+    training_data,
+    optimizer,
+    device,
+    epoch,
+    tb=None,
+    log_interval=100,
+    max_batches=None,
+    run_batch_count=0,
+    start_batch=0,
+):
+    if start_batch != 0:
+        print(f"Training within batch {start_batch}")
+
+    model.train()
+    total_loss = 0
+    n_char_total = 0
+    n_char_correct = 0
+    interrupted_batch = None
+
+    for batch_idx, batch in enumerate(
+        tqdm(
+            training_data,
+            mininterval=2,
+            leave=False,
+            disable=utils.is_cloud(),
+            dynamic_ncols=not utils.is_cloud(),
+        ),
+        start=start_batch,
+    ):
+        batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
+            lambda x: x.to(device), batch
+        )
+        gold_as = batch_as[:, 1:]
+
+        optimizer.zero_grad()
+
+        pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
+
+        loss, n_correct = compute_performance(pred_as, gold_as, smoothing=True)
+        loss.backward()
+
+        # update parameters
+        optimizer.step()
+
+        # note keeping
+        total_loss += loss.item()
+
+        non_pad_mask = gold_as.ne(Constants.PAD)
+        n_char = non_pad_mask.sum().item()
+        n_char_total += n_char
+        n_char_correct += n_correct
+
+        if tb is not None and batch_idx % log_interval == 0:
+            tb.add_scalars(
+                {
+                    "loss_per_char": total_loss / n_char_total,
+                    "accuracy": n_char_correct / n_char_total,
+                },
+                group="train",
+                sub_group="batch",
+                global_step=epoch * len(training_data) + batch_idx,
+            )
+
+        if max_batches is not None and run_batch_count == max_batches:
+            print(
+                f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
+            )
+            interrupted_batch = batch_idx
+            break
+        if utils.is_preempted():
+            print(
+                f"Preemption at end of Epoch batch: {batch_idx} and Run batch: {run_batch_count}. Breaking from epoch."
+            )
+            interrupted_batch = batch_idx
+            break
+        run_batch_count += 1
+
+    loss_per_char = total_loss / n_char_total
+    accuracy = n_char_correct / n_char_total
+
+    if tb is not None:
+        tb.add_scalars(
+            {"loss_per_char": loss_per_char, "accuracy": accuracy},
+            group="train",
+            sub_group="epoch",
+            global_step=epoch,
+        )
+
+    return loss_per_char, accuracy, run_batch_count, interrupted_batch
+
+
+def inference_epoch(model, data, device, epoch, group, tb=None, log_interval=100):
+    model.eval()
+
+    total_loss = 0
+    n_char_total = 0
+    n_char_correct = 0
+
+    with torch.no_grad():
+        for batch_idx, batch in enumerate(tqdm(data, mininterval=2, leave=False)):
+            # prepare data
+            batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
+                lambda x: x.to(device), batch
+            )
+            gold_as = batch_as[:, 1:]
+
+            # forward
+            pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
+            loss, n_correct = compute_performance(pred_as, gold_as, smoothing=False)
+
+            # note keeping
+            total_loss += loss.item()
+
+            non_pad_mask = gold_as.ne(Constants.PAD)
+            n_char = non_pad_mask.sum().item()
+            n_char_total += n_char
+            n_char_correct += n_correct
+
+    loss_per_char = total_loss / n_char_total
+    accuracy = n_char_correct / n_char_total
+
+    if tb is not None:
+        tb.add_scalars(
+            {"loss_per_char": loss_per_char, "accuracy": accuracy},
+            group=group,
+            sub_group="epoch",
+            global_step=epoch,
+        )
+
+    return loss_per_char, accuracy
 
 
 def predict(generator, data, device, max_predictions=None):
