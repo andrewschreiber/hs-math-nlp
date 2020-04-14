@@ -15,10 +15,13 @@ echo "~~~~~~~ Start training ~~~~~~~"
 
 
 # Will write logs to /var/spool/mail/andrew_schreiber1
+# Also /var/mail/andrew_schreiber1
 # echo "python training.py" | at now
 
-# /dev/ttyS0 is blocked on GCP, but /dev/ttyS1 can be written to
-# Logs to serial 2: gcloud compute connect-to-serial-port $INSTANCE_NAME --port 2
-echo "python training.py" | at now
+# /dev/ttyS0 is blocked via permissions on GCP, but /dev/ttyS1 can be written to
+# Logs to serial 2. Connect via: 
+# gcloud compute connect-to-serial-port $INSTANCE_NAME --port 2
+
+echo "python training.py >> /dev/ttyS1" | at now
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
