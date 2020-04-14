@@ -174,6 +174,9 @@ if __name__ == "__main__":
 
     print(f"Calculated max batches: {run_max_batches}")
 
+    # TODO: Remove. For testing GPU
+    run_max_batches = 2500
+
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning
 

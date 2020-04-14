@@ -1,12 +1,10 @@
 #!/bin/bash
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
 
-# Critical to sleep here, or user-related tasks will fizzle/race
-cd /home
-ls
-DIRECTORY = /home/andrew_schreiber1
+DIRECTORY=/home/andrew_schreiber1
 
 if [ ! -d "$DIRECTORY" ]; then
+  # Critical to sleep here, or user-related tasks will fizzle/race
   echo "Sleeping to wait for creation of user directory"
   sleep 1
 
@@ -28,10 +26,10 @@ if [ ! -d "$DIRECTORY" ]; then
   sudo cat gce/shutdown.sh >> $IMAGE_SHUTDOWN_SCRIPT
 
   # Full dataset
-  # gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
+  gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
   
   # 10kb dataset for faster testing
-  gsutil cp gs://math-checkpoints-data/mini_mathematics_dataset-v1.0.tar.gz dataset.zip
+  # gsutil cp gs://math-checkpoints-data/mini_mathematics_dataset-v1.0.tar.gz dataset.zip
 
   tar xvzf dataset.zip
 else

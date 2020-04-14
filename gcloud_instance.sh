@@ -26,7 +26,7 @@ gcloud compute project-info add-metadata \
     --metadata serial-port-enable=TRUE
 
 # Quick retesting dummy instance
-export INSTANCE_NAME="startup-test-p" && \
+export INSTANCE_NAME="2gpu-a" && \
 gcloud compute instances create $INSTANCE_NAME \
         --zone=$ZONE \
         --image-family=$IMAGE_FAMILY \
@@ -36,10 +36,10 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --scopes storage-rw \
-        --metadata-from-file="startup-script=gce/startup.sh,shutdown-script=gce/shutdown.sh" \
+        --accelerator=type=nvidia-tesla-v100,count=2 \
+        --scopes="storage-rw,cloud-platform" \
+        --metadata-from-file="startup-script=gce/startup.sh" \
 && gcloud compute connect-to-serial-port $INSTANCE_NAME
-
 # TODO: Find command for enabling project-wide serial port
 # Exit serial port by typing: ~.
 
