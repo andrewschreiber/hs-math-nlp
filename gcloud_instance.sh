@@ -88,3 +88,5 @@ gcloud beta compute --project "hs-math-nlp" ssh --zone "us-west1-b" "instance-gr
 # Get tensorboard working
 #       On preemptible instance? Or have a separate tensorboard instance that you stream logs to..
 #       Probably the latter would be more solid. They you can easily config a static IP. If you want the data, just download it locally.
+# Checkpointing on epochs & completion enabled
+#       

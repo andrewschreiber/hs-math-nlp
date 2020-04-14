@@ -24,8 +24,7 @@ kill $OLD_PID
 
 echo "SIGTERM sent"
 
-  # Give the python script as much time as possible to cleanup
-while true; do echo 'Keep Alive'; sleep 1; done
-# fi
+# Give the python script as much time as possible to cleanup
+for i in {1..30}; do echo 'Keep Alive'; sleep 1; done
 
 echo "~~~~~~~ Completed shutdown script ~~~~~~~"

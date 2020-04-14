@@ -188,7 +188,7 @@ def train(
 
     for epoch_i in range(start_epoch, epochs):
         print(
-            f"[ Epoch: {epoch_i} / {epochs}, Total Batch: {start_batch + run_batches} / {run_max_batches}]"
+            f"[ Epoch: {epoch_i + 1} / {epochs}, Run Batch: {start_batch + run_batches} / {run_max_batches}]"
         )
         epoch_max_batches_remaining = (
             run_max_batches - run_batches if run_max_batches is not None else None

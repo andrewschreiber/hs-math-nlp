@@ -1,21 +1,18 @@
 #!/bin/bash
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
-# sudo usermod -a -G dialout andrew_schreiber1
 
+# Critical to sleep here, or user-related tasks will fizzle/race
 echo "Sleeping to wait for creation of user directory"
 sleep 1
 
+# For running async and logging
 sudo apt-get install -y at
-
 sudo adduser andrew_schreiber1 dialout
+
 cd /home/andrew_schreiber1
-
 wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
-
 unzip master.zip
-
 sudo chmod -R 777 hs-math-nlp-master
-
 cd hs-math-nlp-master
 
 # In startup, pytorch-latest-gpu updates metadata to use its shutdown script
