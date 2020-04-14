@@ -381,6 +381,7 @@ class FullDatasetManager(data.Dataset):
                     data["original_index"] = data_index
                     data_index += 1
 
+        print("Placing data in dataframe and shuffling...")
         self.full_df = pd.DataFrame(data)
         for i in range(start_epoch + 1):
             self.shuffleData()
