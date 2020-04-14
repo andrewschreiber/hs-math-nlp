@@ -20,8 +20,8 @@ def save_checkpoint_to_bucket(state, preempted, exp, path):
     blob = bucket.blob(filename)
 
     blob.upload_from_filename(filepath)
-
-    print(f"File {filename} uploaded to {filepath}.")
+    print(f"File {filename} uploaded to {BUCKET_NAME}.")
+    os.remove(filepath)
 
 
 def load_latest_checkpoint_from_bucket(exp, model, optimizer):
