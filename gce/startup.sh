@@ -2,33 +2,41 @@
 echo "~~~~~~~ Running startup.sh ~~~~~~~~"       
 
 # Critical to sleep here, or user-related tasks will fizzle/race
-echo "Sleeping to wait for creation of user directory"
-sleep 1
+cd /home
+ls
+DIRECTORY = /home/andrew_schreiber1
 
-# For running async and logging
-sudo apt-get install -y at
-sudo adduser andrew_schreiber1 dialout
+if [ ! -d "$DIRECTORY" ]; then
+  echo "Sleeping to wait for creation of user directory"
+  sleep 1
 
-cd /home/andrew_schreiber1
-wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
-unzip master.zip
-sudo chmod -R 777 hs-math-nlp-master
-cd hs-math-nlp-master
+  # For running async and logging
+  sudo apt-get install -y at
+  sudo adduser andrew_schreiber1 dialout
 
-# In startup, pytorch-latest-gpu updates metadata to use its shutdown script
-IMAGE_SHUTDOWN_SCRIPT=/opt/deeplearning/bin/shutdown_script.sh
-echo "Appending gce/shutdown.sh to $IMAGE_SHUTDOWN_SCRIPT..."
+  cd $DIRECTORY
+  wget https://github.com/andrewschreiber/hs-math-nlp/archive/master.zip
+  unzip master.zip
+  sudo chmod -R 777 hs-math-nlp-master
+  cd hs-math-nlp-master
 
-# Append our shutdown script to it
-sudo cat gce/shutdown.sh >> $IMAGE_SHUTDOWN_SCRIPT
+  # In startup, pytorch-latest-gpu updates metadata to use its shutdown script
+  IMAGE_SHUTDOWN_SCRIPT=/opt/deeplearning/bin/shutdown_script.sh
+  echo "Appending gce/shutdown.sh to $IMAGE_SHUTDOWN_SCRIPT..."
 
-# Full dataset
-# gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
- 
-# 10kb dataset for faster testing
-gsutil cp gs://math-checkpoints-data/mini_mathematics_dataset-v1.0.tar.gz dataset.zip
+  # Append our shutdown script to it
+  sudo cat gce/shutdown.sh >> $IMAGE_SHUTDOWN_SCRIPT
 
-tar xvzf dataset.zip
+  # Full dataset
+  # gsutil cp gs://math-checkpoints-data/mathematics_dataset-v1.0.tar.gz dataset.zip
+  
+  # 10kb dataset for faster testing
+  gsutil cp gs://math-checkpoints-data/mini_mathematics_dataset-v1.0.tar.gz dataset.zip
+
+  tar xvzf dataset.zip
+else
+  echo "$DIRECTORY already exists, skipping to training"
+fi
 
 # We need to use the user account, as root does not have imaged python packages
 su - andrew_schreiber1 -c '/home/andrew_schreiber1/hs-math-nlp-master/gce/training.sh'
