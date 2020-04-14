@@ -87,7 +87,6 @@ def train_epoch(
                 sub_group="batch",
                 global_step=epoch * len(training_data) + batch_idx,
             )
-        run_batch_count += 1
 
         if max_batches is not None and run_batch_count == max_batches:
             print(
@@ -101,6 +100,7 @@ def train_epoch(
             )
             interrupted_batch = batch_idx
             break
+        run_batch_count += 1
 
     loss_per_char = total_loss / n_char_total
     accuracy = n_char_correct / n_char_total
@@ -246,6 +246,9 @@ def train(
             # TODO: Or checkpoint. Must add different naming logic.
             print("Building checkpoint..")
             start = time.time()
+            model = model.to(
+                torch.device("cpu")
+            )  # Save model in CPU form for portability
             state = build_checkpoint(
                 exp_name=exp_name,
                 unique_id=unique_id,
