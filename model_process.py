@@ -61,7 +61,7 @@ def train(
         )
 
         start = time.time()
-        train_loss, train_accu, new_batch_count, interrupted_batch = train_epoch(
+        train_loss, train_accu, new_batch_count, interrupted_batch, done = train_epoch(
             model=model,
             training_data=training_data,
             optimizer=optimizer,
@@ -108,13 +108,11 @@ def train(
                         elapse=(time.time() - start) * 1000,
                     )
                 )
-        if utils.is_preempted():  # or interrupted_batch is not None
+
+        if utils.is_preempted():  # TODO: or interrupted_batch is not None
             # TODO: Or checkpoint. Must add different naming logic.
             print("Building checkpoint..")
             start = time.time()
-            model = model.to(
-                torch.device("cpu")
-            )  # Save model in CPU form for portability
             state = build_checkpoint(
                 exp_name=exp_name,
                 unique_id=unique_id,
@@ -128,7 +126,8 @@ def train(
                 is_preempted=utils.is_preempted(),
                 start_batch=interrupted_batch + 1
                 if interrupted_batch is not None
-                else None,
+                else 0,
+                done=done,
             )
 
             if utils.is_cloud():
@@ -151,7 +150,7 @@ def train(
                 print("Completed preemption handling. Cleanly exiting.")
                 sys.exit(0)
 
-        if interrupted_batch is not None:
+        if done:
             print(f"Reached max batch. Breaking out of training in epoch {epoch_i}")
             break
         training_data.dataset.shuffleData()
@@ -183,6 +182,7 @@ def train_epoch(
     n_char_total = 0
     n_char_correct = 0
     interrupted_batch = None
+    done = False
 
     for batch_idx, batch in enumerate(
         tqdm(
@@ -232,7 +232,8 @@ def train_epoch(
             print(
                 f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
             )
-            interrupted_batch = batch_idx
+            # interrupted_batch = batch_idx
+            done = True
             break
         if utils.is_preempted():
             print(
@@ -253,7 +254,7 @@ def train_epoch(
             global_step=epoch,
         )
 
-    return loss_per_char, accuracy, run_batch_count, interrupted_batch
+    return loss_per_char, accuracy, run_batch_count, interrupted_batch, done
 
 
 def inference_epoch(model, data, device, epoch, group, tb=None, log_interval=100):

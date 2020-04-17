@@ -81,10 +81,13 @@ gcloud beta compute --project "hs-math-nlp" ssh --zone "us-west1-b" "instance-gr
 # wget https://storage.googleapis.com/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
 
 
+
 # TODO: For full transformer run
+
 # Get tensorboard working
 #       On preemptible instance? Or have a separate tensorboard instance that you stream logs to..
 #       Probably the latter would be more solid. They you can easily config a static IP. If you want the data, just download it locally.
+
 # Checkpointing on epochs & completion enabled
 #       Fix missing/unexpected key error. Missing: "encoder.src_word_embed.weight". Unexpected "module.src_word_embed.weight", etc
-
+#       May be a GPU/CPU saving issue. Definitely want to verify you can use a model trained on the GPUs with your laptop.
