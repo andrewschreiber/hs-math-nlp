@@ -6,11 +6,11 @@ import torch
 BUCKET_NAME = "math-checkpoints-data"
 
 
-def save_checkpoint_to_bucket(state, preempted, exp, path):
+def save_checkpoint_to_bucket(state, name, path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-    filename = f"{exp}_latest_checkpoint.pth"
+    filename = f"{name}.pth"
 
     filepath = Path(path) / filename
     torch.save(state, filepath)
@@ -75,7 +75,6 @@ def build_checkpoint(
     is_preempted=False,
     start_batch=0,
 ):
-    # print state_dict.keys?
     return {
         "exp_name": exp_name,
         "unique_id": unique_id,

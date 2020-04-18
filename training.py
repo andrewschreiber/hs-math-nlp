@@ -95,7 +95,7 @@ if __name__ == "__main__":
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "4-17-20_FULLTEST"
+    unique_id = "4-18-20_ckpt"
 
     model = utils.build_transformer()
 
@@ -169,6 +169,7 @@ if __name__ == "__main__":
     print("Extrapolate size:", len(ds_extrapolate))
 
     run_max_batches = 500000  # Defined in paper
+    run_max_batches = 150
 
     # og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
