@@ -79,8 +79,8 @@ def build_checkpoint(
         "exp_name": exp_name,
         "unique_id": unique_id,
         "type": tpe,
-        "model": model.module.state_dict(),
-        "optimizer": optimizer.module.state_dict(),
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
         "acc": acc,
         "loss": loss,
         "epoch": epoch,
@@ -104,7 +104,15 @@ def restore_checkpoint(filename, model=None, optimizer=None):
 
     if model:
         print(f"Loading model state_dict from state found in {filename}")
-        model.load_state_dict(state["model"])
+        from collections import OrderedDict
+
+        new_state_dict = OrderedDict()
+        for k, v in state["model"].items():
+            name = k[7:]  # remove `module.`
+            new_state_dict[name] = v
+        model.load_state_dict(new_state_dict)
+
+        # model.load_state_dict(state["model"])
     if optimizer:
         print(f"Loading optimizer state_dict from state found in {filename}")
         optimizer.load_state_dict(state["optimizer"])
