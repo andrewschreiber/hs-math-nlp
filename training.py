@@ -168,14 +168,13 @@ if __name__ == "__main__":
     )
     print("Extrapolate size:", len(ds_extrapolate))
 
-    og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
+    run_max_batches = 500000  # Defined in paper
 
-    run_max_batches = og_datapoint_iterations / batch_size - 2 * 875000  # 2 epochs
+    # og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
-    print(f"Calculated max batches: {run_max_batches}")
+    # run_max_batches = og_datapoint_iterations / batch_size - 2 * 875000  # 2 epochs
 
-    # TODO: Remove. For testing GPU
-    run_max_batches = 2500
+    # print(f"Calculated max batches: {run_max_batches}")
 
     # we provide the function question_answer_to_position_batch_collate_fn that collates
     # all questions/answers into transformer format enhanced with char positioning

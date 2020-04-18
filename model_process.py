@@ -151,7 +151,9 @@ def train(
                 sys.exit(0)
 
         if done:
-            print(f"Reached max batch. Breaking out of training in epoch {epoch_i}")
+            print(
+                f"Reached max batch. Breaking out of training at the end of epoch {epoch_i}"
+            )
             break
         training_data.dataset.shuffleData()
 
