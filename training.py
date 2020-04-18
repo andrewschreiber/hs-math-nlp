@@ -169,7 +169,7 @@ if __name__ == "__main__":
     print("Extrapolate size:", len(ds_extrapolate))
 
     run_max_batches = 500000  # Defined in paper
-    run_max_batches = 16
+    run_max_batches = 4
 
     # og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 

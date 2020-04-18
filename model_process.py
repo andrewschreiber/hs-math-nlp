@@ -54,11 +54,11 @@ def train(
 
     for epoch_i in range(start_epoch, epochs):
         print(
-            f"[ Epoch: {epoch_i + 1} / {epochs}, Run Batch: {run_batches} / {run_max_batches}]"
+            f"[ Epoch: {epoch_i} / {epochs}, Run Batch: {run_batches} / {run_max_batches}]"
         )
-        epoch_max_batches_remaining = (
-            run_max_batches - run_batches if run_max_batches is not None else None
-        )
+        # epoch_max_batches_remaining = (
+        #     run_max_batches - run_batches if run_max_batches is not None else None
+        # )
 
         start = time.time()
         train_loss, train_accu, new_batch_count, interrupted_batch, done = train_epoch(
@@ -69,7 +69,7 @@ def train(
             epoch=epoch_i,
             tb=tb,
             log_interval=log_interval,
-            max_batches=epoch_max_batches_remaining,
+            max_batches=max_batches,
             run_batch_count=run_batches,
             start_batch=start_batch,
         )
@@ -234,6 +234,7 @@ def train_epoch(
                 global_step=epoch * len(training_data) + batch_idx,
             )
 
+        run_batch_count += 1
         if max_batches is not None and run_batch_count == max_batches:
             print(
                 f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
@@ -243,16 +244,15 @@ def train_epoch(
             break
         if utils.is_preempted():
             print(
-                f"Preemption at end of Epoch batch: {batch_idx} and Run batch: {run_batch_count}. Breaking from epoch."
+                f"Preemption at end of Epoch batch: {batch_idx} and new Run batch: {run_batch_count}. Breaking from epoch."
             )
             interrupted_batch = batch_idx
             break
-        run_batch_count += 1
 
     loss_per_char = total_loss / n_char_total
     accuracy = n_char_correct / n_char_total
 
-    if tb is not None:
+    if tb is not None and not utils.is_preempted():
         tb.add_scalars(
             {"loss_per_char": loss_per_char, "accuracy": accuracy},
             group="train",
