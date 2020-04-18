@@ -75,6 +75,7 @@ def build_checkpoint(
     is_preempted=False,
     start_batch=0,
 ):
+    # print state_dict.keys?
     return {
         "exp_name": exp_name,
         "unique_id": unique_id,
@@ -108,7 +109,7 @@ def restore_checkpoint(filename, model=None, optimizer=None):
 
         new_state_dict = OrderedDict()
         for k, v in state["model"].items():
-            name = k[7:]  # remove `module.`
+            name = k[7:] if "module." in k else k  # remove `module.`
             new_state_dict[name] = v
         model.load_state_dict(new_state_dict)
 
