@@ -127,7 +127,6 @@ def train(
                 start_batch=interrupted_batch + 1
                 if interrupted_batch is not None
                 else 0,
-                done=done,
             )
 
             if utils.is_cloud():
