@@ -95,7 +95,7 @@ if __name__ == "__main__":
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "4-17-20_GPUTEST2"
+    unique_id = "4-17-20_FULLTEST"
 
     model = utils.build_transformer()
 
