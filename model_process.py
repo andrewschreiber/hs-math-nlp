@@ -109,7 +109,7 @@ def train(
                     )
                 )
 
-        if utils.is_preempted() or checkpoint or done:
+        if done or utils.is_preempted() or checkpoint:
             print("Building checkpoint..")
             start = time.time()
             state = build_checkpoint(
@@ -131,12 +131,12 @@ def train(
             if utils.is_cloud():
                 print("Saving to google cloud..")
                 name = "checkpoint"
-                if utils.is_preempted():
+                if done:
+                    name = f"{exp_name}_{unique_id}_b{run_batches}_e{epoch_i}_complete"
+                elif utils.is_preempted():
                     name = f"{exp_name}_{unique_id}_latest_checkpoint"
                 elif checkpoint:
                     name = f"{exp_name}_{unique_id}_b{run_batches}_e{epoch_i}"
-                elif done:
-                    name = f"{exp_name}_{unique_id}_b{run_batches}_e{epoch_i}_complete"
 
                 save_checkpoint_to_bucket(
                     state=state, name=name, path="./checkpoints",

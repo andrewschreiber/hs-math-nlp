@@ -95,7 +95,7 @@ if __name__ == "__main__":
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "4-18-20_ckpt"
+    unique_id = "4-18-20_ckpt2"
 
     model = utils.build_transformer()
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     print("Extrapolate size:", len(ds_extrapolate))
 
     run_max_batches = 500000  # Defined in paper
-    run_max_batches = 150
+    run_max_batches = 16
 
     # og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
 
@@ -222,5 +222,5 @@ if __name__ == "__main__":
         run_batches=run_batches,
         interpolate_data=interpolate_loader,
         extrapolate_data=extrapolate_loader,
-        checkpoint=torch.cuda.is_available(),  # Only save on GPUs
+        checkpoint=True,  # Only save on GPUs
     )
