@@ -54,7 +54,7 @@ def train(
 
     for epoch_i in range(start_epoch, epochs):
         print(
-            f"[ Epoch: {epoch_i + 1} / {epochs}, Run Batch: {start_batch + run_batches} / {run_max_batches}]"
+            f"[ Epoch: {epoch_i + 1} / {epochs}, Run Batch: {run_batches} / {run_max_batches}]"
         )
         epoch_max_batches_remaining = (
             run_max_batches - run_batches if run_max_batches is not None else None
@@ -109,8 +109,7 @@ def train(
                     )
                 )
 
-        if utils.is_preempted():  # TODO: or interrupted_batch is not None
-            # TODO: Or checkpoint. Must add different naming logic.
+        if utils.is_preempted() or checkpoint or done:
             print("Building checkpoint..")
             start = time.time()
             state = build_checkpoint(
@@ -131,11 +130,16 @@ def train(
 
             if utils.is_cloud():
                 print("Saving to google cloud..")
+                name = "checkpoint"
+                if utils.is_preempted():
+                    name = f"{exp_name}_{unique_id}_latest_checkpoint"
+                elif checkpoint:
+                    name = f"{exp_name}_{unique_id}_b{run_batches}_e{epoch_i}"
+                elif done:
+                    name = f"{exp_name}_{unique_id}_b{run_batches}_e{epoch_i}_complete"
+
                 save_checkpoint_to_bucket(
-                    state=state,
-                    preempted=utils.is_preempted(),
-                    exp=f"{exp_name}_{unique_id}",
-                    path="./checkpoints",
+                    state=state, name=name, path="./checkpoints",
                 )
             else:
                 rotating_save_checkpoint(
@@ -184,14 +188,15 @@ def train_epoch(
     n_char_correct = 0
     interrupted_batch = None
     done = False
+    use_tqdm = True
 
     for batch_idx, batch in enumerate(
         tqdm(
             training_data,
             mininterval=2,
             leave=False,
-            disable=utils.is_cloud(),
-            dynamic_ncols=not utils.is_cloud(),
+            disable=use_tqdm,
+            dynamic_ncols=utils.is_cloud(),
         ),
         start=start_batch,
     ):
