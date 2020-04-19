@@ -69,7 +69,7 @@ def train(
             epoch=epoch_i,
             tb=tb,
             log_interval=log_interval,
-            max_batches=max_batches,
+            max_batches=run_max_batches,
             run_batch_count=run_batches,
             start_batch=start_batch,
         )
