@@ -47,4 +47,4 @@ def is_spot_instance():
 
 def is_cloud():
     # TODO: Find os.environ flag / metadata request to check
-    return False
+    return True

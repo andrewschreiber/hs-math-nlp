@@ -80,12 +80,3 @@ gcloud beta compute --project "hs-math-nlp" ssh --zone "us-west1-b" "instance-gr
 
 # wget https://storage.googleapis.com/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
 
-
-
-# TODO: For full transformer run
-
-# Get tensorboard working
-#       On preemptible instance? Or have a separate tensorboard instance that you stream logs to..
-#       Probably the latter would be more solid. They you can easily config a static IP. If you want the data, just download it locally.
-
-# Setup epoch and end-of-run checkpoint saving
