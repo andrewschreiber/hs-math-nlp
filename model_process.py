@@ -188,14 +188,13 @@ def train_epoch(
     n_char_correct = 0
     interrupted_batch = None
     done = False
-    use_tqdm = True
 
     for batch_idx, batch in enumerate(
         tqdm(
             training_data,
             mininterval=2,
             leave=False,
-            disable=use_tqdm,
+            disable=True,
             dynamic_ncols=utils.is_cloud(),
         ),
         start=start_batch,
