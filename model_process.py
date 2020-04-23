@@ -56,9 +56,6 @@ def train(
         print(
             f"[ Epoch: {epoch_i} / {epochs}, Run Batch: {run_batches} / {run_max_batches}]"
         )
-        # epoch_max_batches_remaining = (
-        #     run_max_batches - run_batches if run_max_batches is not None else None
-        # )
 
         start = time.time()
         train_loss, train_accu, new_batch_count, interrupted_batch, done = train_epoch(
