@@ -148,7 +148,7 @@ def train(
                     path="./checkpoints",
                     nb=5,
                 )
-            print(f"Save checkpoint time: {(time.time() - start) * 1000}")
+            print(f"Save checkpoint time: {(time.time() - start) * 1000}ms")
             if utils.is_preempted():
                 print("Completed preemption handling. Cleanly exiting.")
                 sys.exit(0)
@@ -202,6 +202,7 @@ def train_epoch(
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
+
         gold_as = batch_as[:, 1:]
 
         optimizer.zero_grad()
@@ -209,6 +210,7 @@ def train_epoch(
         pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
 
         loss, n_correct = compute_performance(pred_as, gold_as, smoothing=True)
+
         loss.backward()
 
         # update parameters

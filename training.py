@@ -132,6 +132,7 @@ if __name__ == "__main__":
                             state[k] = v.cuda()
 
             print("start_epoch", start_epoch)
+            print("start_batch", start_batch)
             print("best_acc", best_acc)
             print("best_loss", best_loss)
             print("Loaded checkpoint successfully")

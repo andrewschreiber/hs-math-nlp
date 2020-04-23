@@ -11,17 +11,29 @@ def save_checkpoint_to_bucket(state, name, path):
         os.makedirs(path)
 
     filename = f"{name}.pth"
-
     filepath = Path(path) / filename
+
+    try:
+        checkpoint_count = len(os.listdir(os.getcwd()))
+        new_name = f"{checkpoint_count}_{filename}"
+        os.rename(filepath, new_name)
+        print(f"Found existing model, renaming to {new_name}")
+    except OSError:
+        pass
+
+    print("Starting checkpoint save...")
     torch.save(state, filepath)
+    print(f"Final model size: {os.stat(filepath).st_size}")
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(BUCKET_NAME)
-    blob = bucket.blob(filename)
+    # Disable bucket saving for now due to torch.save 0 byte error
 
-    blob.upload_from_filename(filepath)
-    print(f"File {filename} uploaded to {BUCKET_NAME}.")
-    os.remove(filepath)
+    # storage_client = storage.Client()
+    # bucket = storage_client.bucket(BUCKET_NAME)
+    # blob = bucket.blob(filename)
+
+    # print("Started bucket upload...")
+    # blob.upload_from_filename(filepath)
+    # print(f"File {filename} uploaded to {BUCKET_NAME}.")
 
 
 def load_latest_checkpoint_from_bucket(exp, model, optimizer):
@@ -35,6 +47,7 @@ def load_latest_checkpoint_from_bucket(exp, model, optimizer):
     except Exception:
         print(f"No file {source_blob_name} found in bucket.")
         return None
+    print(f"Found checkpoint in bucket: {BUCKET_NAME}")
     return restore_checkpoint(destination_file_name, model, optimizer)
 
 
