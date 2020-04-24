@@ -254,7 +254,7 @@ def train_epoch(
             )
 
             save_checkpoint(
-                state=state, name=f"{name}_latest_checkpoint.pth", path="./checkpoints"
+                state=state, name=f"{name}_latest_checkpoint", path="./checkpoints"
             )
 
         # if utils.is_preempted():

@@ -107,9 +107,15 @@ if __name__ == "__main__":
     if should_restore_checkpoint:
         if utils.is_cloud():
             exp = f"{exp_name}_{unique_id}"
-            state = load_latest_checkpoint_from_bucket(
-                exp=exp, model=model, optimizer=optimizer
+            # state = load_latest_checkpoint_from_bucket(
+            # exp=exp, model=model, optimizer=optimizer
+            # )
+            state = restore_checkpoint(
+                f"checkpoints/math_112m_bs128_4-19-20_transformer_latest_checkpoint.pth",
+                model=model,
+                optimizer=optimizer,
             )
+
         else:
             state = restore_checkpoint(
                 "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
