@@ -5,8 +5,11 @@ import torch
 
 BUCKET_NAME = "math-checkpoints-data"
 
+# TODO: Refactor naming of checkpointing functions
+# Currently just saves locally
 
-def save_checkpoint_to_bucket(state, name, path):
+
+def save_checkpoint(state, name, path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
@@ -14,16 +17,19 @@ def save_checkpoint_to_bucket(state, name, path):
     filepath = Path(path) / filename
 
     try:
-        checkpoint_count = len(os.listdir(os.getcwd()))
-        new_name = f"{checkpoint_count}_{filename}"
-        os.rename(filepath, new_name)
-        print(f"Found existing model, renaming to {new_name}")
+        print(f"Removing existing model file at {filepath}")
+        os.remove(filepath)
+        # checkpoint_count = len(os.listdir(os.getcwd()))
+        # new_name = f"{checkpoint_count}_{filename}"
+        # os.rename(filepath, new_name)
+        # print(f"Found existing model, renaming to {new_name}")
     except OSError:
+        print("No existing model file found")
         pass
 
-    print("Starting checkpoint save...")
+    print(f"Starting checkpoint save of {filepath}...")
     torch.save(state, filepath)
-    print(f"Final model size: {os.stat(filepath).st_size}")
+    print(f"Final saved model size: {os.stat(filepath).st_size}")
 
     # Disable bucket saving for now due to torch.save 0 byte error
 
@@ -76,21 +82,19 @@ def rotating_save_checkpoint(state, prefix, path="./checkpoints", nb=5):
 
 
 def build_checkpoint(
-    exp_name,
-    unique_id,
-    tpe,
+    name,
     model,
     optimizer,
     acc,
     loss,
     epoch,
     run_batches,
+    tpe="training",
     is_preempted=False,
     start_batch=0,
 ):
     return {
-        "exp_name": exp_name,
-        "unique_id": unique_id,
+        "name": name,
         "type": tpe,
         "model": model.state_dict(),
         "optimizer": optimizer.state_dict(),

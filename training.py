@@ -207,8 +207,7 @@ if __name__ == "__main__":
     # Could create a second dataloader here mid_train_loader, that is used only for completing the epoch. Prevents you from having to .next() through the iterable. What are the implications on TB?
 
     model_process.train(
-        exp_name=exp_name,
-        unique_id=unique_id,
+        name=f"{exp_name}_{unique_id}",
         model=model,
         training_data=train_loader,
         optimizer=optimizer,
