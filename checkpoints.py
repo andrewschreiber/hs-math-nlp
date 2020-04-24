@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from google.cloud import storage
 import torch
+import utils
 
 BUCKET_NAME = "math-checkpoints-data"
 
@@ -15,6 +16,10 @@ def save_checkpoint(state, name, path):
 
     filename = f"{name}.pth"
     filepath = Path(path) / filename
+
+    if utils.is_preempted():
+        print("Preempted, skipping model save")
+        return
 
     try:
         print(f"Removing existing model file at {filepath}")
