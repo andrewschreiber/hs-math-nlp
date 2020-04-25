@@ -6,7 +6,6 @@ import os
 import torch
 from torch.utils import data
 import utils
-import sys
 
 # import torch.nn.functional as F
 from transformer import Constants
