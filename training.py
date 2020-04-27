@@ -38,7 +38,7 @@ if __name__ == "__main__":
         multiprocessing.set_start_method("spawn", True)
         device = torch.device("cpu")
         num_workers = 0
-        max_elements = 2
+        max_elements = 200
         # max_batches = None
     else:
         device = torch.device("cuda")
@@ -209,8 +209,6 @@ if __name__ == "__main__":
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
     )
-
-    # Could create a second dataloader here mid_train_loader, that is used only for completing the epoch. Prevents you from having to .next() through the iterable. What are the implications on TB?
 
     model_process.train(
         name=f"{exp_name}_{unique_id}",

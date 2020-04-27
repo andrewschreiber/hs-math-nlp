@@ -6,6 +6,7 @@ import os
 import torch
 from torch.utils import data
 import utils
+from more_itertools import consume
 
 # import torch.nn.functional as F
 from transformer import Constants
@@ -51,11 +52,13 @@ def train(
     )
 
     for epoch_i in range(start_epoch, epochs):
+
+        start = time.time()
+
         print(
             f"[ Epoch: {epoch_i} / {epochs}, Run Batch: {run_batches} / {run_max_batches}]"
         )
 
-        start = time.time()
         train_loss, train_accu, new_batch_count, done = train_epoch(
             model=model,
             name=name,
@@ -170,8 +173,14 @@ def train_epoch(
     run_batch_count=0,
     start_batch=0,
 ):
-    if start_batch != 0:
-        print(f"Training within batch {start_batch}")
+
+    training_iter = iter(training_data)
+
+    if start_batch > 0:
+        # Advance to proper data point
+        print(f"Training within batch {start_batch}...")
+        consume(training_iter, start_batch - 2)
+        print(f"Final question before checkpoint was {next(training_iter)}")
 
     model.train()
     total_loss = 0
@@ -183,16 +192,7 @@ def train_epoch(
     loss_per_char = 0
     accuracy = 0
 
-    for batch_idx, batch in enumerate(
-        tqdm(
-            training_data,
-            mininterval=2,
-            leave=False,
-            disable=True,
-            dynamic_ncols=utils.is_cloud(),
-        ),
-        start=start_batch,
-    ):
+    for batch_idx, batch in enumerate(training_iter, start=start_batch):
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
@@ -220,6 +220,7 @@ def train_epoch(
 
         loss_per_char = total_loss / n_char_total
         accuracy = n_char_correct / n_char_total
+        print(f"Batch index{batch_idx}, acc {accuracy}, loss/char {loss_per_char} ")
 
         if tb is not None and batch_idx % log_interval == 0:
             tb.add_scalars(
@@ -239,7 +240,10 @@ def train_epoch(
             break
 
         if batch_idx % 251 == 0 and batch_idx != 0:
-            print(f"Checkpointing on batch {batch_idx}")
+            print(
+                f"Checkpointing on batch: {batch_idx}. Accuracy: {accuracy}. Loss per char: {loss_per_char}. Time: {time.time()}"
+            )
+            print(f"Current question is {batch_qs}")
 
             state = build_checkpoint(
                 name=name,
