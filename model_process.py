@@ -220,8 +220,6 @@ def train_epoch(
         # update parameters
         optimizer.step()
 
-        # TODO: Checkpoint total_loss, n_char_total, n_char_correct
-
         # note keeping
         total_loss += loss.item()
 
