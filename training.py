@@ -3,6 +3,7 @@
 from tensorboard_utils import Tensorboard
 from checkpoints import restore_checkpoint, load_latest_checkpoint_from_bucket
 import utils
+import traceback
 import model_process
 import random
 
@@ -27,7 +28,7 @@ import multiprocessing
 import signal
 
 
-if __name__ == "__main__":
+def main():
     print("Beginning training...")
     if utils.is_spot_instance():
         signal.signal(signal.SIGTERM, utils.sigterm_handler)
@@ -103,6 +104,9 @@ if __name__ == "__main__":
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
     start_batch = 0
+    total_loss = 0
+    n_char_total = 0
+    n_char_correct = 0
 
     if should_restore_checkpoint:
         if utils.is_cloud():
@@ -130,6 +134,10 @@ if __name__ == "__main__":
             run_batches = state["run_batches"]
 
             start_batch = state.get("start_batch", None) or 0
+            total_loss = state.get("total_loss", None) or 0
+            n_char_total = state.get("n_char_total", None) or 0
+            n_char_correct = state.get("n_char_correct", None) or 0
+
             # Need to move optimizer state to GPU memory
             if torch.cuda.is_available():
                 for state in optimizer.state.values():
@@ -192,6 +200,7 @@ if __name__ == "__main__":
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
+        pin_memory=True,
     )
 
     interpolate_loader = data.DataLoader(
@@ -200,6 +209,7 @@ if __name__ == "__main__":
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
+        pin_memory=True,
     )
 
     extrapolate_loader = data.DataLoader(
@@ -208,6 +218,7 @@ if __name__ == "__main__":
         shuffle=False,
         num_workers=num_workers,
         collate_fn=question_answer_to_position_batch_collate_fn,
+        pin_memory=True,
     )
 
     model_process.train(
@@ -222,8 +233,19 @@ if __name__ == "__main__":
         validation_data=None,
         start_epoch=start_epoch,
         start_batch=start_batch,
+        total_loss=total_loss,
+        n_char_total=n_char_total,
+        n_char_correct=n_char_correct,
         run_batches=run_batches,
         interpolate_data=interpolate_loader,
         extrapolate_data=extrapolate_loader,
         checkpoint=True,  # Only save on GPUs
     )
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except BaseException:
+        print(traceback.format_exc())
+        raise

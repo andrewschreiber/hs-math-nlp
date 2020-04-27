@@ -3,6 +3,7 @@ import math
 from tqdm import tqdm  # tqdm_notebook as tqdm
 import numpy as np
 import os
+import sys
 import torch
 from torch.utils import data
 import utils
@@ -37,6 +38,9 @@ def train(
     interpolate_data=None,
     start_epoch=0,
     start_batch=0,
+    total_loss=0,
+    n_char_total=0,
+    n_char_correct=0,
     run_batches=0,
     best_valid_accu=0.0,
     best_valid_loss=float("Inf"),
@@ -71,6 +75,9 @@ def train(
             max_batches=run_max_batches,
             run_batch_count=run_batches,
             start_batch=start_batch,
+            total_loss=total_loss,
+            n_char_total=n_char_total,
+            n_char_correct=n_char_correct,
         )
         start_batch = 0
         run_batches = new_batch_count
@@ -172,6 +179,9 @@ def train_epoch(
     max_batches=None,
     run_batch_count=0,
     start_batch=0,
+    total_loss=0,
+    n_char_total=0,
+    n_char_correct=0,
 ):
 
     training_iter = iter(training_data)
@@ -180,12 +190,9 @@ def train_epoch(
         # Advance to proper data point
         print(f"Training within batch {start_batch}...")
         consume(training_iter, start_batch - 2)
-        print(f"Final question before checkpoint was {next(training_iter)}")
+        print(f"Final question before checkpoint was {next(training_iter)[0]}")
 
     model.train()
-    total_loss = 0
-    n_char_total = 0
-    n_char_correct = 0
     # interrupted_batch = None
     done = False
 
@@ -193,6 +200,9 @@ def train_epoch(
     accuracy = 0
 
     for batch_idx, batch in enumerate(training_iter, start=start_batch):
+        if utils.is_preempted():
+            sys.exit(0)
+
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
@@ -209,6 +219,8 @@ def train_epoch(
 
         # update parameters
         optimizer.step()
+
+        # TODO: Checkpoint total_loss, n_char_total, n_char_correct
 
         # note keeping
         total_loss += loss.item()
@@ -254,6 +266,9 @@ def train_epoch(
                 epoch=epoch,
                 run_batches=run_batch_count,
                 start_batch=batch_idx + 1,
+                total_loss=total_loss,
+                n_char_total=n_char_total,
+                n_char_correct=n_char_correct,
             )
 
             save_checkpoint(

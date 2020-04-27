@@ -97,6 +97,9 @@ def build_checkpoint(
     tpe="training",
     is_preempted=False,
     start_batch=0,
+    total_loss=0,
+    n_char_total=0,
+    n_char_correct=0,
 ):
     return {
         "name": name,
@@ -109,6 +112,9 @@ def build_checkpoint(
         "run_batches": run_batches,
         "is_preempted": is_preempted,
         "start_batch": start_batch,
+        "total_loss": total_loss,
+        "n_char_total": n_char_total,
+        "n_char_correct": n_char_correct,
     }
 
 
