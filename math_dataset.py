@@ -332,11 +332,14 @@ class FullDatasetManager(data.Dataset):
         max_elements=None,
         deterministic=False,
         start_epoch=0,
+        start_datapoint=0,
         mode="train",
     ):
         self.root_dir = Path(root_dir)
         self.full_df = None
         self.max_elements = max_elements
+        self.start_datapoint = start_datapoint
+        print("Starting at datapoint ", start_datapoint)
 
         if mode == "train":
             self.dirs = {
@@ -353,7 +356,7 @@ class FullDatasetManager(data.Dataset):
                 f"Mode {mode} failed. Try train, interpolate, or extrapolate"
             )
 
-        print(f"Loading training data with max_elements: {self.max_elements}")
+        print(f"Loading {mode} data with max_elements: {self.max_elements}")
         start = time.time()
         data = {"questions": [], "answers": [], "original_index": []}
         # all_questions = []
@@ -396,6 +399,9 @@ class FullDatasetManager(data.Dataset):
         self.full_df = self.full_df.reindex(np.random.permutation(self.full_df.index))
         print(f"Speed of shuffling dataset: {(time.time() - start)} seconds")
 
+    def endEpoch(self):
+        self.start_datapoint = 0
+
     def _getQuestionsAnswersFromFile(self, filepath):
         count = 0
         with open(filepath) as datafile:
@@ -414,6 +420,8 @@ class FullDatasetManager(data.Dataset):
             return questions, answers
 
     def __getitem__(self, idx):
+        idx = idx + self.start_datapoint
+        # print(f"Get item {idx}")
         if self.full_df is None:
             raise ValueError("full_df is none in __getitem__")
         question, answer, _ = self.full_df.iloc[idx]
@@ -427,13 +435,16 @@ class FullDatasetManager(data.Dataset):
     def __len__(self):
         if self.full_df is None:
             raise ValueError("full_df is none in __len__")
-        return self.full_df.shape[0]
+        length = self.full_df.shape[0] - self.start_datapoint
+        # print("Dataset __len__", length)
+        return length
 
 
 # Core collate function
 def question_answer_to_position_batch_collate_fn(qas):
     """ Gather + Pad the question/answer to the max seq length in batch """
 
+    # start = time.time()
     max_q_len = max(len(qa["q_enc"]) for qa in qas)
     max_a_len = max(len(qa["a_enc"]) for qa in qas)
 
@@ -476,6 +487,8 @@ def question_answer_to_position_batch_collate_fn(qas):
 
     batch_as = torch.LongTensor(batch_as)
     batch_as_pos = torch.LongTensor(batch_as_pos)
+
+    # print(f"Collate took {time.time() - start}s")
 
     return batch_qs, batch_qs_pos, batch_as, batch_as_pos
 

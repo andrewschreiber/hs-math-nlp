@@ -7,7 +7,6 @@ import sys
 import torch
 from torch.utils import data
 import utils
-from more_itertools import consume
 
 # import torch.nn.functional as F
 from transformer import Constants
@@ -79,7 +78,7 @@ def train(
             n_char_total=n_char_total,
             n_char_correct=n_char_correct,
         )
-        start_batch = 0
+
         run_batches = new_batch_count
 
         print(
@@ -158,6 +157,9 @@ def train(
                 f"Reached max batch. Breaking out of training at the end of epoch {epoch_i}"
             )
             break
+
+        start_batch = 0
+        training_data.dataset.endEpoch()
         training_data.dataset.shuffleData()
 
     print("~~~~~~ Completed training ~~~~~~")
@@ -187,10 +189,8 @@ def train_epoch(
     training_iter = iter(training_data)
 
     if start_batch > 0:
-        # Advance to proper data point
-        print(f"Training within batch {start_batch}...")
-        consume(training_iter, start_batch - 2)
-        print(f"Final question before checkpoint was {next(training_iter)[0]}")
+        last_question = np_encode_string(training_data.dataset.__getitem__(-1)["q"])
+        print(f"Final question before checkpoint was {last_question}")
 
     model.train()
     # interrupted_batch = None
@@ -201,6 +201,7 @@ def train_epoch(
 
     for batch_idx, batch in enumerate(training_iter, start=start_batch):
         if utils.is_preempted():
+            print("Exiting...")
             sys.exit(0)
 
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
@@ -230,8 +231,9 @@ def train_epoch(
 
         loss_per_char = total_loss / n_char_total
         accuracy = n_char_correct / n_char_total
-        print(f"Batch index{batch_idx}, acc {accuracy}, loss/char {loss_per_char} ")
+        print(f"Batch index {batch_idx}, acc {accuracy}, loss/char {loss_per_char} ")
 
+        # TODO: automatically trim the TB logs that go beyond the preempted checkpoint
         if tb is not None and batch_idx % log_interval == 0:
             tb.add_scalars(
                 {"loss_per_char": loss_per_char, "accuracy": accuracy},
@@ -253,7 +255,7 @@ def train_epoch(
             print(
                 f"Checkpointing on batch: {batch_idx}. Accuracy: {accuracy}. Loss per char: {loss_per_char}. Time: {time.time()}"
             )
-            print(f"Current question is {batch_qs}")
+            print(f"Last question is {batch_qs[-1]}")
 
             state = build_checkpoint(
                 name=name,

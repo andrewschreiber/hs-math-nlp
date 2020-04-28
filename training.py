@@ -39,7 +39,7 @@ def main():
         multiprocessing.set_start_method("spawn", True)
         device = torch.device("cpu")
         num_workers = 0
-        max_elements = 200
+        max_elements = 5
         # max_batches = None
     else:
         device = torch.device("cuda")
@@ -70,7 +70,8 @@ def main():
         batch_size = 1024
     else:
         # Uses ~10 GB VRAM
-        batch_size = 128
+        # batch_size = 128
+        batch_size = 32
     print("Batch size:", batch_size)
 
     start_epoch = 0
@@ -115,7 +116,7 @@ def main():
             # exp=exp, model=model, optimizer=optimizer
             # )
             state = restore_checkpoint(
-                f"checkpoints/math_112m_bs128_4-19-20_transformer_latest_checkpoint.pth",
+                f"checkpoints/{exp}_latest_checkpoint.pth",
                 model=model,
                 optimizer=optimizer,
             )
@@ -162,6 +163,7 @@ def main():
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
+        start_datapoint=start_batch * batch_size,
     )
     print("Train size:", len(ds_train))
 
@@ -247,5 +249,6 @@ if __name__ == "__main__":
     try:
         main()
     except BaseException:
+        print("Catching error...")
         print(traceback.format_exc())
         raise
