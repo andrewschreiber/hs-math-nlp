@@ -231,7 +231,7 @@ def train_epoch(
 
         loss_per_char = total_loss / n_char_total
         accuracy = n_char_correct / n_char_total
-        print(f"Batch index {batch_idx}, acc {accuracy}, loss/char {loss_per_char} ")
+        print(f"Batch: {batch_idx}. Acc: {accuracy:.5f}. Loss: {loss_per_char:.5f} ")
 
         # TODO: automatically trim the TB logs that go beyond the preempted checkpoint
         if tb is not None and batch_idx % log_interval == 0:
