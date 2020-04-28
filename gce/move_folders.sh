@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -rf m2
+
 mv hs-math-nlp-master m2
 
 rm master.zip
@@ -19,4 +21,3 @@ mv m2/mathematics_dataset-v1.0 hs-math-nlp-master
 cd hs-math-nlp-master
 
 ls
- 
