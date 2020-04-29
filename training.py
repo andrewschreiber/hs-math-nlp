@@ -3,6 +3,7 @@
 from tensorboard_utils import Tensorboard
 from checkpoints import restore_checkpoint, load_latest_checkpoint_from_bucket
 import utils
+import time
 import traceback
 import model_process
 import random
@@ -251,4 +252,8 @@ if __name__ == "__main__":
     except BaseException:
         print("Catching error...")
         print(traceback.format_exc())
+        if utils.is_cloud():
+            print("Shuttng down in 10 seconds...")
+            time.sleep(10)
+            os.system("sudo shutdown -h now")
         raise
