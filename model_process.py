@@ -131,14 +131,16 @@ def train(
 
             if utils.is_cloud():
                 print("Saving to google cloud..")
-                name = "checkpoint"
+                checkpoint_name = "checkpoint"
                 if done:
-                    name = f"{name}_b{run_batches}_e{epoch_i}_complete"
+                    checkpoint_name = (
+                        f"{checkpoint_name}_b{run_batches}_e{epoch_i}_complete"
+                    )
                 elif checkpoint:
-                    name = f"{name}_b{run_batches}_e{epoch_i}"
+                    checkpoint_name = f"{checkpoint_name}_b{run_batches}_e{epoch_i}"
 
                 save_checkpoint(
-                    state=state, name=name, path="./checkpoints",
+                    state=state, name=checkpoint_name, path="./checkpoints",
                 )
             else:
                 rotating_save_checkpoint(
@@ -192,6 +194,7 @@ def train_epoch(
         last_question = np_encode_string(training_data.dataset.__getitem__(-1)["q"])
         print(f"Final question before checkpoint was {last_question}")
 
+    dataset_length = training_data.dataset.trueLength()
     model.train()
     # interrupted_batch = None
     done = False
@@ -227,19 +230,30 @@ def train_epoch(
         non_pad_mask = gold_as.ne(Constants.PAD)
         n_char = non_pad_mask.sum().item()
         n_char_total += n_char
-        n_char_correct += n_correct
+        n_char = n_char if n_char > 1 else 1
 
+        batch_loss = loss / n_char
         loss_per_char = total_loss / n_char_total
+
+        n_char_correct += n_correct
+        batch_acc = n_correct / n_char
         accuracy = n_char_correct / n_char_total
-        print(f"Batch: {batch_idx}. Acc: {accuracy:.6f}. Loss: {loss_per_char:.6f} ")
+        print(
+            f"Batch: {batch_idx}. Acc: {accuracy:.6f}. Loss: {loss_per_char:.6f}. Batch_acc: {batch_acc:.6f}. Batch_loss: {batch_loss:.6f} "
+        )
 
         # TODO: automatically trim the TB logs that go beyond the preempted checkpoint
         if tb is not None and batch_idx % log_interval == 0:
             tb.add_scalars(
-                {"loss_per_char": loss_per_char, "accuracy": accuracy},
+                {
+                    "loss_per_char": loss_per_char,
+                    "accuracy": accuracy,
+                    "batch_loss": batch_loss,
+                    "batch_acc": batch_acc,
+                },
                 group="train",
                 sub_group="batch",
-                global_step=epoch * len(training_data) + batch_idx,
+                global_step=epoch * dataset_length + batch_idx,
             )
 
         run_batch_count += 1

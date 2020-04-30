@@ -433,11 +433,15 @@ class FullDatasetManager(data.Dataset):
         }
 
     def __len__(self):
+        # Modified for mid-epoch loading
         if self.full_df is None:
             raise ValueError("full_df is none in __len__")
         length = self.full_df.shape[0] - self.start_datapoint
         # print("Dataset __len__", length)
         return length
+
+    def trueLength(self):
+        return self.full_df.shape[0]
 
 
 # Core collate function
