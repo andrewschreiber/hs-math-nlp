@@ -395,9 +395,15 @@ class FullDatasetManager(data.Dataset):
 
     def shuffleData(self):
         # Will shuffle deterministically if numpy seed is set
+        # TODO: Try faster deterministic shuffles. Takes 1.5-2min on 112mil dataset
         start = time.time()
-        self.full_df = self.full_df.reindex(np.random.permutation(self.full_df.index))
-        print(f"Speed of shuffling dataset: {(time.time() - start)} seconds")
+        permuted = np.random.permutation(self.full_df.index)
+        print(f"Speed of shuffling dataset (permutation): {time.time() - start}s")
+        start = time.time()
+        self.full_df = self.full_df.reindex(permuted)  # ~10x slower step than above
+        print(
+            f"Speed of shuffling dataset (reindexing): {(time.time() - start)} seconds"
+        )
 
     def endEpoch(self):
         self.start_datapoint = 0

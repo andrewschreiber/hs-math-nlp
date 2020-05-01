@@ -1,4 +1,13 @@
 #!/bin/bash
+if [ "$(whoami)" != "root" ] ; then
+  echo "Use sudo to run this script"
+  exit 1
+fi
+
+if [ ! -d "hs-math-nlp-master" ]; then
+  echo "Must be in root directory"
+  exit 1
+fi
 
 rm -rf m2
 
