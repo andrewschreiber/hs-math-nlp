@@ -194,7 +194,6 @@ def train_epoch(
         last_question = np_encode_string(training_data.dataset.__getitem__(-1)["q"])
         print(f"Final question before checkpoint was {last_question}")
 
-    dataset_length = training_data.dataset.trueLength()
     model.train()
     # interrupted_batch = None
     done = False
@@ -253,10 +252,11 @@ def train_epoch(
                 },
                 group="train",
                 sub_group="batch",
-                global_step=epoch * dataset_length + batch_idx,
+                global_step=run_batch_count,
             )
 
         run_batch_count += 1
+
         if max_batches is not None and run_batch_count == max_batches:
             print(
                 f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
