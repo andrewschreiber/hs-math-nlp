@@ -72,6 +72,24 @@ def np_decode_string(chars, char0=ord(" ")):
     return s
 
 
+def getQuestionsAnswersFromFile(filepath, max_elements=None):
+    count = 0
+    with open(filepath) as datafile:
+        questions = []
+        answers = []
+        for line in datafile:
+            line = line.rstrip("\n")
+            if max_elements is not None and count == (2 * max_elements):
+                return questions, answers
+            if count % 2 == 0:
+                questions.append(line)
+            else:
+                answers.append(line)
+            count += 1
+        print(f"{len(questions)} questions in {filepath}")
+        return questions, answers
+
+
 class LazyFileMathDataset(data.Dataset):
     """Stream loads math dataset file in a lazy way (optional)
     pandas is used for naive streaming as Python doesn't provide any better tool for that critical feature"""
@@ -85,7 +103,7 @@ class LazyFileMathDataset(data.Dataset):
         self.category, self.module = fn.split("__")
 
         if not self.lazy_load:
-            self.build_dataset()
+            self._build_dataset()
             if log:
                 print(
                     f"Initialized MathDataset with file {self.file} (category:{self.category}, module:{self.module}) containing {self.qas.shape[0]} pairs of questions/answers"
@@ -104,6 +122,8 @@ class LazyFileMathDataset(data.Dataset):
         self._build_dataset()
 
     def _build_dataset(self):
+        if self.qas is not None:
+            raise ValueError("Attempting to build dataset twice")
         if self.max_elements is not None:
             self.df_max = self.df.iloc[0 : self.max_elements * 2]
         else:
@@ -143,8 +163,7 @@ class LazyFileMathDataset(data.Dataset):
 
     def __getitem__(self, idx):
         if self.qas is None:
-            raise ValueError("qas is none in __getitem__")
-            # self._read_build_dataset()
+            self._read_build_dataset()
         question, answer = self.qas.iloc[idx]
         return {
             "q": question,
@@ -155,8 +174,7 @@ class LazyFileMathDataset(data.Dataset):
 
     def __len__(self):
         if self.qas is None:
-            raise ValueError("qas is none in __len__")
-            # self._read_build_dataset()
+            self._read_build_dataset()
         return self.qas.shape[0]
 
 
@@ -274,25 +292,6 @@ class MathDatasetManager:
 
         return data.ConcatDataset(ds)
 
-    def build_dataset_full(self):
-        """Builds the entire dataset"""
-        ds = []
-        for typ in ["train-easy", "train-medium", "train-hard"]:
-            for c in [
-                "algebra",
-                "numbers",
-                "polynomials",
-                "arithmetic",
-                "measurement",
-                "comparison",
-                "probability",
-                "calculus",
-            ]:
-                print(f"adding category {c}/../{typ}")
-                dss = self._build_datasets_from_category(c, typ)
-                ds.extend(dss)
-        return data.ConcatDataset(ds)
-
     def build_dataset_from_level(self, level):
         """Builds the dataset for a level"""
         ds = []
@@ -324,6 +323,44 @@ class MathDatasetManager:
             ds.append(self.dfs[category][module][typ])
         return data.ConcatDataset(ds)
 
+        # for questions, answers in qas:
+        #     data["questions"].extend(questions)
+        #     data["answers"].extend(answers)
+        #     data["original_index"] = data_index
+        #     data_index += 1
+        # print(data)
+
+
+class BenchmarkDatasetManager:
+    def __init__(self, root_dir):
+        self.root_dir = Path(root_dir)
+        self.interpolate_files = self._get_files("interpolate")
+        self.extrapolate_files = self._get_files("extrapolate")
+
+    def _get_files(self, directory):
+        return [
+            ff
+            for ff in glob.glob(
+                str(self.root_dir / directory) + "**/*.txt", recursive=True
+            )
+        ]
+
+    def get_datasets(self, mode):
+        datasets = {}
+        if mode == "interpolate":
+            files = self.interpolate_files
+        elif mode == "extrapolate":
+            files = self.extrapolate_files
+        else:
+            raise ValueError(f"Invalid mode {mode}.")
+
+        for f in files:
+            ds = LazyFileMathDataset(f, lazy_load=True, log=False)
+            module = f.split("/")[-1].split(".")[0]
+            datasets[module] = ds
+
+        return datasets
+
 
 class FullDatasetManager(data.Dataset):
     def __init__(
@@ -334,6 +371,7 @@ class FullDatasetManager(data.Dataset):
         start_epoch=0,
         start_datapoint=0,
         mode="train",
+        shuffle=True,
     ):
         self.root_dir = Path(root_dir)
         self.full_df = None
@@ -384,10 +422,12 @@ class FullDatasetManager(data.Dataset):
                     data["original_index"] = data_index
                     data_index += 1
 
-        print("Placing data in dataframe and shuffling...")
+        print("Placing data in dataframe...")
         self.full_df = pd.DataFrame(data)
-        for i in range(start_epoch + 1):
-            self.shuffleData()
+        if shuffle:
+            print("Shuffling...")
+            for i in range(start_epoch + 1):
+                self.shuffleData()
 
         print(
             f"Took {time.time() - start} seconds to initialize dataset of length {self.full_df.shape[0]}. Deterministic: {deterministic}. Mode {mode}"
@@ -409,21 +449,7 @@ class FullDatasetManager(data.Dataset):
         self.start_datapoint = 0
 
     def _getQuestionsAnswersFromFile(self, filepath):
-        count = 0
-        with open(filepath) as datafile:
-            questions = []
-            answers = []
-            for line in datafile:
-                line = line.rstrip("\n")
-                if self.max_elements is not None and count == (2 * self.max_elements):
-                    return questions, answers
-                if count % 2 == 0:
-                    questions.append(line)
-                else:
-                    answers.append(line)
-                count += 1
-            print(f"{len(questions)} questions in {filepath}")
-            return questions, answers
+        return getQuestionsAnswersFromFile(filepath, self.max_elements)
 
     def __getitem__(self, idx):
         idx = idx + self.start_datapoint
