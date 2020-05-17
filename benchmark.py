@@ -61,7 +61,6 @@ for module, dataset in benchmark.get_datasets("interpolate").items():
             )
             gold_as = batch_as[:, 1:]
 
-            # forward
             pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
             loss, n_correct = compute_performance(pred_as, gold_as, smoothing=False)
 
