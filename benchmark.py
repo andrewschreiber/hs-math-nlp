@@ -63,6 +63,9 @@ for module, dataset in benchmark.get_datasets("interpolate").items():
         f"Got {correct} of {len(dataset)} correct in {module} after {(time.time() - start)}s."
     )
     results[module] = correct
+    with open(f"{module}.txt", "a") as f:
+        f.write(f"{correct}")
+
 
 print(results)
 print("Benchmark complete")
