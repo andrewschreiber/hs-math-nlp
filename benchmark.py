@@ -14,7 +14,7 @@ from math_dataset import (
     MAX_QUESTION_SZ,
 )
 
-WORKSPACE_FOLDER = "/Users/andrew/git/hs-math-nlp"
+WORKSPACE_FOLDER = "/home/andrew_schreiber1/hs-math-nlp-master"
 
 print(f"Running benchmarks at {time.time()}")
 model_filepath = f"{WORKSPACE_FOLDER}/checkpoints/checkpoint_b500000_e4_complete.pth"
@@ -34,6 +34,7 @@ ds_path = f"{WORKSPACE_FOLDER}/mathematics_dataset-v1.0"
 benchmark = BenchmarkDatasetManager(ds_path)
 
 batch_size = 128
+print("Batch size", 128)
 generator = Generator(
     model, device, beam_size=5, max_token_seq_len=MAX_QUESTION_SZ, n_best=1,
 )

@@ -14,6 +14,7 @@ kill $OLD_PID
 echo "SIGTERM sent"
 
 # Give the python script as much time as possible to cleanup
-for i in {1..30}; do echo 'Keep Alive'; sleep 1; done
+# Actually this doesn't matter. Google instakills / corrupts preemptible GPU instances. You must save periodically, ahead of time.
+# for i in {1..30}; do echo 'Keep Alive'; sleep 1; done
 
 echo "~~~~~~~ Completed shutdown script ~~~~~~~"

@@ -37,4 +37,5 @@ else
 fi
 
 # We need to use the user account, as root does not have imaged python packages
-su - andrew_schreiber1 -c '/home/andrew_schreiber1/hs-math-nlp-master/gce/training.sh'
+
+# su - andrew_schreiber1 -c '/home/andrew_schreiber1/hs-math-nlp-master/gce/training.sh'

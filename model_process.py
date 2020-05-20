@@ -375,6 +375,7 @@ def predict(generator, data, device, max_predictions=None):
 def predict_benchmark(generator, data, device, max_predictions=None):
     resps = []
     for batch_idx, (batch_qs, batch_qs_pos, batch_as) in enumerate(data):
+        start = time.time()
 
         all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
 
@@ -385,6 +386,8 @@ def predict_benchmark(generator, data, device, max_predictions=None):
             c = g == a
             resp = {"correct": c, "guess": g, "answer": a, "score": s}
             resps.append(resp)
+
+        print(f"Batch time {time.time() - start}s")
 
     return resps
 
