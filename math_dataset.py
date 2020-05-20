@@ -589,3 +589,32 @@ def question_to_position_batch_collate_fn(qs):
     batch_qs_pos = torch.LongTensor(batch_qs_pos)
 
     return batch_qs, batch_qs_pos
+
+
+def benchmark_collate_fn(batch):
+    """ Gather + Pad the question to the max seq length in batch. For Benchmarking. """
+
+    max_q_len = max(len(d["q_enc"]) for d in batch)
+
+    batch_qs = []
+    batch_string_as = []
+
+    for d in batch:
+        batch_string_as.append(d["a"])
+
+        q = d["q_enc"]
+        pad_width = (0, max_q_len - len(q))
+        padded = np.pad(q, pad_width, mode="constant", constant_values=Constants.PAD,)
+        batch_qs.append(padded)
+
+    batch_qs_pos = np.array(
+        [
+            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(q)]
+            for q in batch_qs
+        ]
+    )
+
+    batch_qs = torch.LongTensor(batch_qs)
+    batch_qs_pos = torch.LongTensor(batch_qs_pos)
+
+    return batch_qs, batch_qs_pos, batch_string_as

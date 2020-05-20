@@ -13,7 +13,7 @@ from math_dataset import (
     MathDatasetManager,
     LazyFileMathDataset,
     BenchmarkDatasetManager,
-    question_answer_to_position_batch_collate_fn,
+    benchmark_collate_fn,
 )
 
 device = torch.device("cpu")
@@ -43,39 +43,13 @@ for module, dataset in benchmark.get_datasets("interpolate").items():
         batch_size=batch_size,
         shuffle=False,
         num_workers=1,
-        collate_fn=question_answer_to_position_batch_collate_fn,
+        collate_fn=benchmark_collate_fn,
         pin_memory=False,
     )
     iterator = iter(loader)
+    batch_qs, batch_qs_pos, batch_string_as = next(iterator)
 
-    total_loss = 0
-    n_char_total = 0
-    n_char_correct = 0
+    print(batch_qs, batch_qs_pos, batch_string_as)
 
-    model.eval()
-    with torch.no_grad():
-        for batch_idx, batch in enumerate(iterator):
-            # prepare data
-            batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
-                lambda x: x.to(device), batch
-            )
-            gold_as = batch_as[:, 1:]
 
-            pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
-            loss, n_correct = compute_performance(pred_as, gold_as, smoothing=False)
-
-            # note keeping
-            total_loss += loss.item()
-
-            non_pad_mask = gold_as.ne(Constants.PAD)
-            n_char = non_pad_mask.sum().item()
-            n_char_total += n_char
-            n_char_correct += n_correct
-
-            print(f"{n_correct} / {n_char} correct on {batch_idx}")
-
-    loss_per_char = total_loss / n_char_total
-    accuracy = n_char_correct / n_char_total
-    print(f"{module} complete. Acc: {accuracy}. Loss_per_char: {loss_per_char}")
-
-print("Done.")
+print("Benchmark complete")
