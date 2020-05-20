@@ -98,11 +98,11 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "4-19-20_transformer"
+    unique_id = "5-20-20_transformer"
 
     model = utils.build_transformer()
 
-    optimizer = optim.Adam(model.parameters(), lr=6e-6, betas=(0.9, 0.995), eps=1e-9)
+    optimizer = optim.Adam(model.parameters(), lr=6e-4, betas=(0.9, 0.995), eps=1e-9)
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
     start_batch = 0
@@ -111,23 +111,15 @@ def main():
     n_char_correct = 0
 
     if should_restore_checkpoint:
-        if utils.is_cloud():
-            exp = f"{exp_name}_{unique_id}"
-            # state = load_latest_checkpoint_from_bucket(
-            # exp=exp, model=model, optimizer=optimizer
-            # )
-            state = restore_checkpoint(
-                f"checkpoints/{exp}_latest_checkpoint.pth",
-                model=model,
-                optimizer=optimizer,
-            )
-
-        else:
-            state = restore_checkpoint(
-                "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
-                model=model,
-                optimizer=optimizer,
-            )
+        exp = f"{exp_name}_{unique_id}"
+        # state = load_latest_checkpoint_from_bucket(
+        # exp=exp, model=model, optimizer=optimizer
+        # )
+        state = restore_checkpoint(
+            f"checkpoints/{exp}_latest_checkpoint.pth",
+            model=model,
+            optimizer=optimizer,
+        )
 
         if state is not None:
             start_epoch = state["epoch"]
