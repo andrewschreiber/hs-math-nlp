@@ -30,12 +30,6 @@ else:
     device = torch.device("cuda")
 print("device", device)
 
-if torch.cuda.device_count() > 1:
-    print("Using", torch.cuda.device_count(), "GPUs!")
-    model = nn.DataParallel(model)
-
-model = model.to(device)
-
 ds_path = f"{WORKSPACE_FOLDER}/mathematics_dataset-v1.0"
 benchmark = BenchmarkDatasetManager(ds_path)
 
