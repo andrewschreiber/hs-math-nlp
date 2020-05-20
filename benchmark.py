@@ -1,42 +1,44 @@
 import torch
-import numpy as np
 import time
 import checkpoints
 
 import model_process
 import utils
-import matplotlib.pyplot as plt
 from torch.utils import data
-from loss import compute_performance
+import torch.nn as nn
 
-from transformer import Constants
 from transformer.Generator import Generator
 from math_dataset import (
-    MathDatasetManager,
-    LazyFileMathDataset,
     BenchmarkDatasetManager,
     benchmark_collate_fn,
     MAX_QUESTION_SZ,
 )
 
-device = torch.device("cpu")
-print("device", device)
+WORKSPACE_FOLDER = "/Users/andrew/git/hs-math-nlp"
 
-model_filepath = (
-    "/Users/andrew/git/hs-math-nlp/checkpoints/checkpoint_b500000_e4_complete.pth"
-)
+print(f"Running benchmarks at {time.time()}")
+model_filepath = f"{WORKSPACE_FOLDER}/checkpoints/checkpoint_b500000_e4_complete.pth"
+
 # build default transformer model
 model = utils.build_transformer()
 # restore model from checkpoint
 _ = checkpoints.restore_checkpoint(model_filepath, model)
-# mdsmgr = MathDatasetManager("/Users/andrew/git/hs-math-nlp/mathematics_dataset-v1.0")
 
-ds_path = "/Users/andrew/git/hs-math-nlp/mathematics_dataset-v1.0"
+if not torch.cuda.is_available():
+    device = torch.device("cpu")
+else:
+    device = torch.device("cuda")
+print("device", device)
+
+if torch.cuda.device_count() > 1:
+    print("Using", torch.cuda.device_count(), "GPUs!")
+    model = nn.DataParallel(model)
+
+model = model.to(device)
+
+ds_path = f"{WORKSPACE_FOLDER}/mathematics_dataset-v1.0"
 benchmark = BenchmarkDatasetManager(ds_path)
 
-
-# ds = mdsmgr.build_dataset_from_file(f"{ds_path}/{typ}/{file}")
-# lz = LazyFileMathDataset(filepath)
 batch_size = 128
 generator = Generator(
     model, device, beam_size=5, max_token_seq_len=MAX_QUESTION_SZ, n_best=1,
