@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import time
 import checkpoints
 
 import model_process
@@ -43,6 +44,7 @@ generator = Generator(
 results = {}
 for module, dataset in benchmark.get_datasets("interpolate").items():
     print(f"Testing {module} of length {len(dataset)} ...")
+    start = time.time()
     loader = data.DataLoader(
         dataset,
         batch_size=batch_size,
@@ -59,7 +61,10 @@ for module, dataset in benchmark.get_datasets("interpolate").items():
         if resp["correct"] is True:
             correct += 1
 
-    print(f"Got {correct} of {len(dataset)} correct in {module}.")
+    print(f"S: {(time.time() - start) * 1000}ms")
+    print(
+        f"Got {correct} of {len(dataset)} correct in {module} after {(time.time() - start)}s."
+    )
     results[module] = correct
 
 print(results)
