@@ -372,6 +372,23 @@ def predict(generator, data, device, max_predictions=None):
     return resps
 
 
+def predict_benchmark(generator, data, device, max_predictions=None):
+    resps = []
+    for batch_idx, (batch_qs, batch_qs_pos, batch_as) in enumerate(data):
+
+        all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
+
+        for i, idx_seqs in enumerate(all_hyp):
+            g = np_decode_string(np.array(idx_seqs[0]))
+            s = all_scores[i][0].cpu().item()
+            a = batch_as[i]
+            c = g == a
+            resp = {"correct": c, "guess": g, "answer": a, "score": s}
+            resps.append(resp)
+
+    return resps
+
+
 def predict_dataset(
     dataset,
     model,
@@ -403,7 +420,7 @@ def predict_dataset(
         if cur == 0:
             break
 
-        batch_qs, batch_qs_pos, _, _ = map(lambda x: x.to(device), batch)
+        batch_qs, batch_qs_pos, _ = map(lambda x: x.to(device), batch)
         all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
 
         callback(batch_idx, all_hyp, all_scores)
