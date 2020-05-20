@@ -4,8 +4,8 @@ if [ "$(whoami)" != "root" ] ; then
   exit 1
 fi
 
-if [ ! -d "hs-math-nlp-master" ]; then
-  echo "Must be in root directory"
+if [ ! -d "$HOME" ]; then
+  echo "Must be in home directory"
   exit 1
 fi
 
