@@ -73,7 +73,7 @@ class Encoder(nn.Module):
         d_v,
         d_model,
         d_inner,
-        dropout=0.1,
+        dropout=0.0,
     ):
 
         super().__init__()
@@ -105,7 +105,7 @@ class Encoder(nn.Module):
         non_pad_mask = get_non_pad_mask(src_seq)
 
         # -- Forward
-        
+
         enc_output = self.src_word_emb(src_seq) + self.position_enc(src_pos)
 
         for enc_layer in self.layer_stack:
@@ -134,7 +134,7 @@ class Decoder(nn.Module):
         d_v,
         d_model,
         d_inner,
-        dropout=0.1,
+        dropout=0.0,
     ):
 
         super().__init__()
@@ -206,7 +206,7 @@ class Transformer(nn.Module):
         n_head=8,
         d_k=64,
         d_v=64,
-        dropout=0.1,
+        dropout=0.0,
         tgt_emb_prj_weight_sharing=True,
         emb_src_tgt_weight_sharing=True,
     ):
