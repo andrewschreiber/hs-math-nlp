@@ -80,3 +80,4 @@ gcloud beta compute --project "hs-math-nlp" ssh --zone "us-west1-b" "instance-gr
 
 # wget https://storage.googleapis.com/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
 
+# SSH into tensorboard gcloud compute ssh transformer-2 -- -NfL 6006:localhost:6006
