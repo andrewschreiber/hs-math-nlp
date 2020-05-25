@@ -222,7 +222,7 @@ def train_epoch(
         loss.backward()
 
         # Clip gradients, paper uses 0.1
-        clip_grad_norm_(model.parameters(), 0.1)
+        # clip_grad_norm_(model.parameters(), 0.1)
 
         # update parameters
         optimizer.step()

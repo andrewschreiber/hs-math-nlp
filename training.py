@@ -98,7 +98,7 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "5-20-20_transformer"
+    unique_id = "5-25-20_transformer"
 
     model = utils.build_transformer()
 
