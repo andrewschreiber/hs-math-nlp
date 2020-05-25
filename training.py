@@ -98,11 +98,22 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "5-25-20_transformer3"
+    unique_id = "5-25-20_transformer4"
 
     model = utils.build_transformer()
 
-    optimizer = optim.Adam(model.parameters(), lr=6e-4, betas=(0.9, 0.995), eps=1e-9)
+    lr = 6e-4
+    beta_coeff_low = 0.9
+    beta_coeff_high = 0.995
+    eps = 1e-9
+
+    print(
+        f"Learning rate {lr}. B low {beta_coeff_low}. B high {beta_coeff_high}. eps{eps}"
+    )
+
+    optimizer = optim.Adam(
+        model.parameters(), lr=lr, betas=(beta_coeff_low, beta_coeff_high), eps=eps
+    )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
     start_batch = 0
