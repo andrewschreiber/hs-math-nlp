@@ -85,7 +85,7 @@ def main():
 
     deterministic = True
     if deterministic:
-        seed = 0
+        seed = 42
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         random.seed(seed)
@@ -98,11 +98,11 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "5-25-20_transformer2"
+    unique_id = "5-25-20_transformer3"
 
     model = utils.build_transformer()
 
-    optimizer = optim.Adam(model.parameters(), lr=6e-6, betas=(0.9, 0.995), eps=1e-9)
+    optimizer = optim.Adam(model.parameters(), lr=6e-4, betas=(0.9, 0.995), eps=1e-9)
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
     start_batch = 0
