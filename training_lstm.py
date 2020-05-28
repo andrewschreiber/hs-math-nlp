@@ -35,26 +35,18 @@ unique_id = "02-24-2020"
 
 tb = Tensorboard(exp_name, unique_name=unique_id)
 
-mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
-ds_train = mdsmgr.build_dataset_from_module(
-    "algebra", "linear_1d", "train-easy", max_elements=max_elements
+ds_train = FullDatasetManager(
+    "./mathematics_dataset-v1.0", max_elements=10, deterministic=True,
 )
-# ds_train = FullDatasetManager(
-#         "./mathematics_dataset-v1.0", max_elements=max_elements
-#     )
-
 train_loader = torch.utils.data.DataLoader(
     ds_train,
-    batch_size=1,
+    batch_size=16,
     shuffle=True,
     num_workers=num_workers,
     collate_fn=question_answer_to_position_batch_collate_fn,
 )
 
-
 # Define Model Architecture
-
-
 class TextLSTM(nn.Module):
     def __init__(self):
         super(TextLSTM, self).__init__()
