@@ -1,6 +1,6 @@
-'''
+"""
   code by Tae Hwan Jung(Jeff Jung) @graykode
-'''
+"""
 import numpy as np
 from tensorboard_utils import Tensorboard
 import multiprocessing
@@ -20,10 +20,10 @@ dtype = torch.FloatTensor
 # CUDA for PyTorch
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
-#cudnn.benchmark = True
+# cudnn.benchmark = True
 
 # Uni-LSTM(Attention) Parameters
-max_sentence_length = 50 
+max_sentence_length = 50
 max_elements = 100
 n_step = 1
 num_hidden = 2048
@@ -36,55 +36,69 @@ unique_id = "02-24-2020"
 tb = Tensorboard(exp_name, unique_name=unique_id)
 
 mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
-ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
+ds_train = mdsmgr.build_dataset_from_module(
+    "algebra", "linear_1d", "train-easy", max_elements=max_elements
+)
 # ds_train = FullDatasetManager(
 #         "./mathematics_dataset-v1.0", max_elements=max_elements
 #     )
 
-train_loader = torch.utils.data.DataLoader(ds_train, batch_size=1,
-                        shuffle=True, num_workers=num_workers,
-                        collate_fn=question_answer_to_position_batch_collate_fn)    
+train_loader = torch.utils.data.DataLoader(
+    ds_train,
+    batch_size=1,
+    shuffle=True,
+    num_workers=num_workers,
+    collate_fn=question_answer_to_position_batch_collate_fn,
+)
 
 
-#Define Model Architecture 
+# Define Model Architecture
+
 
 class TextLSTM(nn.Module):
     def __init__(self):
         super(TextLSTM, self).__init__()
 
-        self.lstm = nn.LSTM(max_sentence_length, num_hidden,1)
-        self.W = nn.Parameter(torch.randn([num_hidden, max_sentence_length]).type(dtype))
+        self.lstm = nn.LSTM(max_sentence_length, num_hidden, 1)
+        self.W = nn.Parameter(
+            torch.randn([num_hidden, max_sentence_length]).type(dtype)
+        )
         self.b = nn.Parameter(torch.randn([max_sentence_length]).type(dtype))
-        self.out = nn.Linear(1,1)
+        self.out = nn.Linear(1, 1)
 
     def forward(self, batch_qs, batch_qs_pos, batch_as, batch_as_pos):
-        #To Do: Change this input forward pass to match inputs
+        # To Do: Change this input forward pass to match inputs
         batch_size = len(batch_qs)
-        hidden_state = Variable(torch.zeros(1, batch_size, num_hidden))   # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
-        cell_state = Variable(torch.zeros(1, batch_size, num_hidden))     # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
+        hidden_state = Variable(
+            torch.zeros(1, batch_size, num_hidden)
+        )  # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
+        cell_state = Variable(
+            torch.zeros(1, batch_size, num_hidden)
+        )  # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
 
         outputs, (_, _) = self.lstm(batch_qs, (hidden_state, cell_state))
         outputs = outputs[-1]  # [batch_size, num_hidden]
         model = torch.mm(outputs, self.W) + self.b  # model : [batch_size, n_class]
         return model
 
+
 model = TextLSTM()
-# Specify optimizations algs 
+# Specify optimizations algs
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 model_process.train(
-        exp_name=exp_name,
-        unique_id=unique_id,
-        model=model,
-        training_data=train_loader,
-        optimizer=optimizer,
-        device=device,
-        epochs=1,
-        tb=tb,
-        max_batches=max_batches,
-        validation_data=None,
-    )
+    exp_name=exp_name,
+    unique_id=unique_id,
+    model=model,
+    training_data=train_loader,
+    optimizer=optimizer,
+    device=device,
+    epochs=1,
+    tb=tb,
+    max_batches=max_batches,
+    validation_data=None,
+)
 
 # Training (Old School)
 # for epoch in range(1000):
