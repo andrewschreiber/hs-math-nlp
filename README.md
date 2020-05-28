@@ -12,7 +12,7 @@
 - Dataset Code from paper: https://github.com/deepmind/mathematics_dataset
 - PyTorch helpers: https://github.com/mandubian/pytorch_math_dataset
 
-### Relevant papers
+## Relevant papers
 
 - Machine Learning Projects for Iterated Distillation and Amplification: https://owainevans.github.io/pdfs/evans_ida_projects.pdf
 - Do NLP Models Know Numbers? Probing Numeracy in Embeddings: https://arxiv.org/pdf/1909.07940.pdf
