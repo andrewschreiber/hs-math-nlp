@@ -87,17 +87,27 @@ model = TextLSTM()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+# model_process.train(
+#     exp_name=exp_name,
+#     unique_id=unique_id,
+#     model=model,
+#     training_data=train_loader,
+#     optimizer=optimizer,
+#     device=device,
+#     epochs=1,
+#     tb=tb,
+#     max_batches=max_batches,
+#     validation_data=None,
+# )
+
 model_process.train(
-    exp_name=exp_name,
-    unique_id=unique_id,
+    name=f"{exp_name}_{unique_id}",
     model=model,
     training_data=train_loader,
     optimizer=optimizer,
     device=device,
-    epochs=1,
+    epochs=1000,  # Not relevant, will get ended before this due to max_b
     tb=tb,
-    max_batches=max_batches,
-    validation_data=None,
 )
 
 # Training (Old School)
