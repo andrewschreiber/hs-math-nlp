@@ -207,16 +207,10 @@ def train_epoch(
             print("Exiting...")
             sys.exit(0)
 
-<<<<<<< HEAD
-    for batch_idx, batch in enumerate(tqdm(training_data, mininterval=2, leave=False)):
-        print(batch)
-        batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(lambda x: x.to(device), batch)
-=======
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch
         )
 
->>>>>>> master
         gold_as = batch_as[:, 1:]
 
         optimizer.zero_grad()
