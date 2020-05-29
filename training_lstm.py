@@ -52,8 +52,9 @@ class TextLSTM(nn.Module):
     def __init__(self):
         super(TextLSTM, self).__init__()
         self.lstm = nn.LSTM(VOCAB_SZ, num_hidden,1)
-        self.tgt_word_prj = nn.Linear(2048, VOCAB_SZ , bias=False)
-        nn.init.xavier_normal_(self.tgt_word_prj.weight)
+        #self.linear = nn.Linear(2048,32, bias=False)
+        self.tgt_word_prj = nn.Linear(2048, 32 , bias=False)
+        #nn.init.xavier_normal_(self.tgt_word_prj.weight)
         # self.W = nn.Parameter(
         #     torch.randn([num_hidden, VOCAB_SZ]).type(dtype)
         # )
@@ -74,10 +75,12 @@ class TextLSTM(nn.Module):
         cell_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float)) 
         batch_qs = batch_qs.float()
         outputs, (_, _) = self.lstm(batch_qs, (hidden_state, cell_state))
+        #outputs = outputs.permute(1, 0, 2)
         # outputs = outputs[-1]  # [batch_size, num_hidden]
         # model = torch.mm(outputs, self.W) + self.b  # model : [batch_size, n_class]
         # return model
-        seq_logit = self.tgt_word_prj(outputs) * 1.0
+        #lin_outputs = self.linear(outputs)
+        seq_logit = self.tgt_word_prj(outputs)
         return seq_logit.view(-1, seq_logit.size(2))
 
 
