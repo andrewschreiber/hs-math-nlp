@@ -85,7 +85,9 @@ class Encoder(nn.Module):
         )
 
         self.position_enc = nn.Embedding.from_pretrained(
-            get_sinusoid_encoding_table(n_position, d_word_vec, padding_idx=0),
+            get_sinusoid_encoding_table(
+                n_position, d_word_vec, padding_idx=Constants.PAD
+            ),
             freeze=True,
         )
 
@@ -145,7 +147,9 @@ class Decoder(nn.Module):
         )
 
         self.position_enc = nn.Embedding.from_pretrained(
-            get_sinusoid_encoding_table(n_position, d_word_vec, padding_idx=0),
+            get_sinusoid_encoding_table(
+                n_position, d_word_vec, padding_idx=Constants.PAD
+            ),
             freeze=True,
         )
 
