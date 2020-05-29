@@ -78,7 +78,7 @@ class TextLSTM(nn.Module):
         # model = torch.mm(outputs, self.W) + self.b  # model : [batch_size, n_class]
         # return model
         seq_logit = self.tgt_word_prj(outputs) * 1.0
-        return seq_logit.view(-1)
+        return seq_logit.view(-1, seq_logit.size(2))
 
 
 
