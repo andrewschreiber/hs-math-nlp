@@ -10,10 +10,13 @@ import torch.optim as optim
 from torch.autograd import Variable
 import model_process
 from math_dataset import (
-    question_answer_to_position_batch_collate_fn,
+    lstm_batch_collate_fn,
     MathDatasetManager,
     FullDatasetManager,
+
 )
+
+from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
 
 dtype = torch.FloatTensor
 
@@ -23,9 +26,7 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 # cudnn.benchmark = True
 
 # Uni-LSTM(Attention) Parameters
-max_sentence_length = 50
 max_elements = 100
-n_step = 1
 num_hidden = 2048
 max_batches = 1
 num_workers = 2
@@ -43,35 +44,42 @@ train_loader = torch.utils.data.DataLoader(
     batch_size=16,
     shuffle=True,
     num_workers=num_workers,
-    collate_fn=question_answer_to_position_batch_collate_fn,
+    collate_fn=lstm_batch_collate_fn,
 )
 
 # Define Model Architecture
 class TextLSTM(nn.Module):
     def __init__(self):
         super(TextLSTM, self).__init__()
-
-        self.lstm = nn.LSTM(max_sentence_length, num_hidden, 1)
-        self.W = nn.Parameter(
-            torch.randn([num_hidden, max_sentence_length]).type(dtype)
-        )
-        self.b = nn.Parameter(torch.randn([max_sentence_length]).type(dtype))
-        self.out = nn.Linear(1, 1)
+        self.lstm = nn.LSTM(VOCAB_SZ, num_hidden,1)
+        self.tgt_word_prj = nn.Linear(2048, VOCAB_SZ , bias=False)
+        nn.init.xavier_normal_(self.tgt_word_prj.weight)
+        # self.W = nn.Parameter(
+        #     torch.randn([num_hidden, VOCAB_SZ]).type(dtype)
+        # )
+        # self.b = nn.Parameter(torch.randn([VOCAB_SZ]).type(dtype))
 
     def forward(self, batch_qs, batch_qs_pos, batch_as, batch_as_pos):
         # To Do: Change this input forward pass to match inputs
         batch_size = len(batch_qs)
-        hidden_state = Variable(
-            torch.zeros(1, batch_size, num_hidden)
-        )  # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
-        cell_state = Variable(
-            torch.zeros(1, batch_size, num_hidden)
-        )  # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
-
+        batch_qs = torch.transpose(batch_qs, 0, 1)
+        batch_qs = torch.nn.functional.one_hot(batch_qs, VOCAB_SZ)
+        # hidden_state = Variable(
+        #     torch.zeros(1, batch_size, num_hidden)
+        # )  # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
+        # cell_state = Variable(
+        #     torch.zeros(1, batch_size, num_hidden)
+        # )  # [num_layers(=1) * num_directions(=1), batch_size, num_hidden]
+        hidden_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float))
+        cell_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float)) 
+        batch_qs = batch_qs.float()
         outputs, (_, _) = self.lstm(batch_qs, (hidden_state, cell_state))
-        outputs = outputs[-1]  # [batch_size, num_hidden]
-        model = torch.mm(outputs, self.W) + self.b  # model : [batch_size, n_class]
-        return model
+        # outputs = outputs[-1]  # [batch_size, num_hidden]
+        # model = torch.mm(outputs, self.W) + self.b  # model : [batch_size, n_class]
+        # return model
+        seq_logit = self.tgt_word_prj(outputs) * 1.0
+        return seq_logit.view(-1)
+
 
 
 model = TextLSTM()

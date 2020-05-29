@@ -618,3 +618,55 @@ def benchmark_collate_fn(batch):
     batch_qs_pos = torch.LongTensor(batch_qs_pos)
 
     return batch_qs, batch_qs_pos, batch_string_as
+
+
+def lstm_batch_collate_fn(qas):
+    """ Gather + Pad the question/answer to the max seq length in dataset """
+
+    # start = time.time()
+    max_q_len = MAX_QUESTION_SZ
+    max_a_len = MAX_ANSWER_SZ
+
+    batch_qs = []
+    batch_as = []
+    for qa in qas:
+        batch_qs.append(
+            np.pad(
+                qa["q_enc"],
+                (0, max_q_len - len(qa["q_enc"])),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
+        batch_as.append(
+            np.pad(
+                qa["a_enc"],
+                (0, max_a_len - len(qa["a_enc"])),
+                mode="constant",
+                constant_values=Constants.PAD,
+            )
+        )
+
+    batch_qs_pos = np.array(
+        [
+            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(q)]
+            for q in batch_qs
+        ]
+    )
+
+    batch_as_pos = np.array(
+        [
+            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(a)]
+            for a in batch_as
+        ]
+    )
+
+    batch_qs = torch.LongTensor(batch_qs)
+    batch_qs_pos = torch.LongTensor(batch_qs_pos)
+
+    batch_as = torch.LongTensor(batch_as)
+    batch_as_pos = torch.LongTensor(batch_as_pos)
+
+    # print(f"Collate took {time.time() - start}s")
+
+    return batch_qs, batch_qs_pos, batch_as, batch_as_pos
