@@ -1,4 +1,5 @@
 import torch
+import time
 import numpy as np
 import os
 from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
@@ -46,8 +47,15 @@ def is_spot_instance():
 
 
 def is_cloud():
-    # TODO: Find os.environ flag / metadata request to check
-    return True
+    from sys import platform
+
+    if platform == "linux" or platform == "linux2":
+        return True
+    elif platform == "darwin" or "win32":
+        return False
+    else:
+        print(f"Unknown platform {platform}. Assuming is_cloud == True")
+        return True
 
 
 def shutdown():

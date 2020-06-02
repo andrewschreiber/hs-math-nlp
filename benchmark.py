@@ -6,7 +6,6 @@ import model_process
 import utils
 from torch.utils import data
 import traceback
-import os
 
 from transformer.Generator import Generator
 from math_dataset import (
@@ -25,13 +24,15 @@ def main():
     if not torch.cuda.is_available():
         device = torch.device("cpu")
         batch_size = 128
-        workspace_folder = LOCAL_WORKSPACE_FOLDER
     else:
         device = torch.device("cuda")
         batch_size = 1024
-        workspace_folder = CLOUD_WORKSPACE_FOLDER
     print("Device", device)
     print("Batch size", batch_size)
+
+    workspace_folder = (
+        CLOUD_WORKSPACE_FOLDER if utils.is_cloud() else LOCAL_WORKSPACE_FOLDER
+    )
 
     model_filepath = (
         f"{workspace_folder}/checkpoints/checkpoint_b500000_e4_complete.pth"
@@ -81,7 +82,7 @@ def main():
 
     print(results)
     print("Benchmark complete")
-    shutdown()
+    utils.shutdown()
 
 
 if __name__ == "__main__":
