@@ -174,7 +174,9 @@ class Decoder(nn.Module):
         dec_enc_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=tgt_seq)
 
         # -- Forward
-        dec_output = self.tgt_word_emb(tgt_seq) + self.position_enc(tgt_pos)
+        tgt_emb = self.tgt_word_emb(tgt_seq)
+        position_emb = self.position_enc(tgt_pos)
+        dec_output = tgt_emb + position_emb
 
         for dec_layer in self.layer_stack:
             dec_output, dec_slf_attn, dec_enc_attn = dec_layer(

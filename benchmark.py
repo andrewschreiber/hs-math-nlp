@@ -14,10 +14,14 @@ from math_dataset import (
     MAX_QUESTION_SZ,
 )
 
-WORKSPACE_FOLDER = "/home/andrew_schreiber1/hs-math-nlp-master"
+CLOUD_WORKSPACE_FOLDER = "/home/andrew_schreiber1/hs-math-nlp-master"
+LOCAL_WORKSPACE_FOLDER = "/Users/andrew/git/hs-math-nlp"
 
 print(f"Running benchmarks at {time.time()}")
-model_filepath = f"{WORKSPACE_FOLDER}/checkpoints/checkpoint_b500000_e4_complete.pth"
+workspace_folder = (
+    LOCAL_WORKSPACE_FOLDER if not torch.cuda.is_available() else CLOUD_WORKSPACE_FOLDER
+)
+model_filepath = f"{workspace_folder}/checkpoints/checkpoint_b500000_e4_complete.pth"
 
 # build default transformer model
 model = utils.build_transformer()
@@ -33,7 +37,7 @@ else:
     device = torch.device("cuda")
 print("device", device)
 
-ds_path = f"{WORKSPACE_FOLDER}/mathematics_dataset-v1.0"
+ds_path = f"{workspace_folder}/mathematics_dataset-v1.0"
 benchmark = BenchmarkDatasetManager(ds_path)
 
 batch_size = 128
