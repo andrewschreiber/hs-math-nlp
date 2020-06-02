@@ -48,3 +48,11 @@ def is_spot_instance():
 def is_cloud():
     # TODO: Find os.environ flag / metadata request to check
     return True
+
+
+def shutdown():
+    if is_cloud():
+        print("Shutting down in 30 seconds...")
+        time.sleep(30)
+        print(f"Shutting down at {time.time()}")
+        os.system("sudo shutdown -h now")

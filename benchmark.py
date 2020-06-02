@@ -81,18 +81,16 @@ def main():
 
     print(results)
     print("Benchmark complete")
+    shutdown()
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Ending run")
+        print("Ending script")
     except BaseException:
         print("Catching error...")
         print(traceback.format_exc())
-        if utils.is_cloud():
-            print("Shutting down in 30 seconds...")
-            time.sleep(30)
-            os.system("sudo shutdown -h now")
+        utils.shutdown()
         raise

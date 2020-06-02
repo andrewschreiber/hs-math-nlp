@@ -257,8 +257,5 @@ if __name__ == "__main__":
     except BaseException:
         print("Catching error...")
         print(traceback.format_exc())
-        if utils.is_cloud():
-            print("Shutting down in 30 seconds...")
-            time.sleep(30)
-            os.system("sudo shutdown -h now")
+        utils.shutdown()
         raise
