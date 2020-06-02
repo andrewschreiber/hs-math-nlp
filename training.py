@@ -252,11 +252,13 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    except KeyboardInterrupt:
+        print("Ending script")
     except BaseException:
         print("Catching error...")
         print(traceback.format_exc())
         if utils.is_cloud():
-            print("Shuttng down in 10 seconds...")
-            time.sleep(10)
+            print("Shutting down in 30 seconds...")
+            time.sleep(30)
             os.system("sudo shutdown -h now")
         raise
