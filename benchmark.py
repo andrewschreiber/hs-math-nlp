@@ -22,7 +22,10 @@ model_filepath = f"{WORKSPACE_FOLDER}/checkpoints/checkpoint_b500000_e4_complete
 # build default transformer model
 model = utils.build_transformer()
 # restore model from checkpoint
-_ = checkpoints.restore_checkpoint(model_filepath, model)
+state = checkpoints.restore_checkpoint(model_filepath, model)
+if state is None:
+    print("Ending run without checkpoint")
+    exit(0)
 
 if not torch.cuda.is_available():
     device = torch.device("cpu")
