@@ -73,7 +73,7 @@ class Encoder(nn.Module):
         d_v,
         d_model,
         d_inner,
-        dropout=0.0,
+        dropout=0.1,
     ):
 
         super().__init__()
@@ -85,9 +85,7 @@ class Encoder(nn.Module):
         )
 
         self.position_enc = nn.Embedding.from_pretrained(
-            get_sinusoid_encoding_table(
-                n_position, d_word_vec, padding_idx=Constants.PAD
-            ),
+            get_sinusoid_encoding_table(n_position, d_word_vec, padding_idx=0),
             freeze=True,
         )
 
@@ -107,7 +105,7 @@ class Encoder(nn.Module):
         non_pad_mask = get_non_pad_mask(src_seq)
 
         # -- Forward
-
+        
         enc_output = self.src_word_emb(src_seq) + self.position_enc(src_pos)
 
         for enc_layer in self.layer_stack:
@@ -136,7 +134,7 @@ class Decoder(nn.Module):
         d_v,
         d_model,
         d_inner,
-        dropout=0.0,
+        dropout=0.1,
     ):
 
         super().__init__()
@@ -147,9 +145,7 @@ class Decoder(nn.Module):
         )
 
         self.position_enc = nn.Embedding.from_pretrained(
-            get_sinusoid_encoding_table(
-                n_position, d_word_vec, padding_idx=Constants.PAD
-            ),
+            get_sinusoid_encoding_table(n_position, d_word_vec, padding_idx=0),
             freeze=True,
         )
 
@@ -174,9 +170,7 @@ class Decoder(nn.Module):
         dec_enc_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=tgt_seq)
 
         # -- Forward
-        tgt_emb = self.tgt_word_emb(tgt_seq)
-        position_emb = self.position_enc(tgt_pos)
-        dec_output = tgt_emb + position_emb
+        dec_output = self.tgt_word_emb(tgt_seq) + self.position_enc(tgt_pos)
 
         for dec_layer in self.layer_stack:
             dec_output, dec_slf_attn, dec_enc_attn = dec_layer(
@@ -212,7 +206,7 @@ class Transformer(nn.Module):
         n_head=8,
         d_k=64,
         d_v=64,
-        dropout=0.0,
+        dropout=0.1,
         tgt_emb_prj_weight_sharing=True,
         emb_src_tgt_weight_sharing=True,
     ):

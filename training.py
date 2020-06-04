@@ -98,22 +98,11 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-4-20_transformer_warmup"
+    unique_id = "4-19-20_transformer"
 
     model = utils.build_transformer()
 
-    lr = 6e-4
-    beta_coeff_low = 0.9
-    beta_coeff_high = 0.995
-    eps = 1e-9
-
-    print(
-        f"Learning rate {lr}. B low {beta_coeff_low}. B high {beta_coeff_high}. eps{eps}"
-    )
-
-    optimizer = optim.Adam(
-        model.parameters(), lr=lr, betas=(beta_coeff_low, beta_coeff_high), eps=eps
-    )
+    optimizer = optim.Adam(model.parameters(), lr=6e-6, betas=(0.9, 0.995), eps=1e-9)
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
     start_batch = 0
@@ -122,14 +111,26 @@ def main():
     n_char_correct = 0
 
     if should_restore_checkpoint:
-        exp = f"{exp_name}_{unique_id}"
-        # cp_path = f"checkpoints/{exp}_latest_checkpoint.pth"
-        cp_path = "checkpoint_b109375_e0.pth"
+        if utils.is_cloud():
+            exp = f"{exp_name}_{unique_id}"
+            print("Cloud checkpoint..")
+            #checkpoint = "math_112m_bs128_4-19-20_transformer_b218750_e1.pth"
+            # state = load_latest_checkpoint_from_bucket(
+            # exp=exp, model=model, optimizer=optimizer
+            # )
+            state = restore_checkpoint(
+                #f"checkpoints/{exp}_latest_checkpoint.pth",
+                "checkpoints/math_112m_bs128_4-19-20_transformer_b109375_e0.pth",
+                model=model,
+                optimizer=optimizer,
+            )
 
-        # state = load_latest_checkpoint_from_bucket(
-        # exp=exp, model=model, optimizer=optimizer
-        # )
-        state = restore_checkpoint(cp_path, model=model, optimizer=optimizer,)
+        else:
+            state = restore_checkpoint(
+                "checkpoints/math_112m_bs128_1-25-20_1_875000_training_0.pth",
+                model=model,
+                optimizer=optimizer,
+            )
 
         if state is not None:
             start_epoch = state["epoch"]
@@ -161,10 +162,8 @@ def main():
 
     model = model.to(device)
 
-    dataset_path = "./mathematics_dataset-v1.0"
-
     ds_train = FullDatasetManager(
-        dataset_path,
+        "./mathematics_dataset-v1.0",
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -173,7 +172,7 @@ def main():
     print("Train size:", len(ds_train))
 
     ds_interpolate = FullDatasetManager(
-        dataset_path,
+        "./mathematics_dataset-v1.0",
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -182,7 +181,7 @@ def main():
     print("Interpolate size:", len(ds_interpolate))
 
     ds_extrapolate = FullDatasetManager(
-        dataset_path,
+        "./mathematics_dataset-v1.0",
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -253,10 +252,11 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except KeyboardInterrupt:
-        print("Ending script")
     except BaseException:
         print("Catching error...")
         print(traceback.format_exc())
-        utils.shutdown()
+        if utils.is_cloud():
+            print(f"Shutting down PID {os.getpid()} in 30 seconds...")
+            time.sleep(30)
+            os.system("sudo shutdown -h now")
         raise

@@ -7,7 +7,6 @@ import sys
 import torch
 from torch.utils import data
 import utils
-from torch.nn.utils import clip_grad_norm_
 
 # import torch.nn.functional as F
 from transformer import Constants
@@ -195,6 +194,7 @@ def train_epoch(
         last_question = np_encode_string(training_data.dataset.__getitem__(-1)["q"])
         print(f"Final question before checkpoint was {last_question}")
 
+    dataset_length = training_data.dataset.trueLength()
     model.train()
     # interrupted_batch = None
     done = False
@@ -214,14 +214,12 @@ def train_epoch(
         gold_as = batch_as[:, 1:]
 
         optimizer.zero_grad()
+
         pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
 
         loss, n_correct = compute_performance(pred_as, gold_as, smoothing=True)
 
         loss.backward()
-
-        # Clip gradients, paper uses 0.1
-        clip_grad_norm_(model.parameters(), 0.1)
 
         # update parameters
         optimizer.step()
@@ -259,7 +257,6 @@ def train_epoch(
             )
 
         run_batch_count += 1
-
         if max_batches is not None and run_batch_count == max_batches:
             print(
                 f"Reached {run_batch_count} batches on max_batches of {max_batches}. Breaking from epoch."
@@ -361,6 +358,7 @@ def predict(generator, data, device, max_predictions=None):
     for batch_idx, batch in enumerate(data):
         if cur == 0:
             break
+
         batch_qs, batch_qs_pos = map(lambda x: x.to(device), batch)
         all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
 
@@ -370,26 +368,6 @@ def predict(generator, data, device, max_predictions=None):
                 s = all_scores[i][j].cpu().item()
                 resps.append({"resp": r, "score": s})
         cur -= 1
-
-    return resps
-
-
-def predict_benchmark(generator, data, device, max_predictions=None):
-    resps = []
-    for batch_idx, (batch_qs, batch_qs_pos, batch_as) in enumerate(data):
-        start = time.time()
-
-        all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
-
-        for i, idx_seqs in enumerate(all_hyp):
-            g = np_decode_string(np.array(idx_seqs[0]))
-            s = all_scores[i][0].cpu().item()
-            a = batch_as[i]
-            c = g == a
-            resp = {"correct": c, "guess": g, "answer": a, "score": s}
-            resps.append(resp)
-
-        print(f"Batch time {time.time() - start}s")
 
     return resps
 
@@ -425,7 +403,7 @@ def predict_dataset(
         if cur == 0:
             break
 
-        batch_qs, batch_qs_pos, _ = map(lambda x: x.to(device), batch)
+        batch_qs, batch_qs_pos, _, _ = map(lambda x: x.to(device), batch)
         all_hyp, all_scores = generator.generate_batch(batch_qs, batch_qs_pos)
 
         callback(batch_idx, all_hyp, all_scores)
