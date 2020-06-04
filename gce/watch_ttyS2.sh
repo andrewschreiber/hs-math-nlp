@@ -13,4 +13,4 @@ gcloud compute connect-to-serial-port $name --port 2
 
 sleep 20
 
-./watch_ttyS2.sh $name
+./watch_ttyS2.sh -n $name

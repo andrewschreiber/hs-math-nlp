@@ -98,11 +98,11 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-4-20_transformer"
+    unique_id = "6-4-20_transformer_warmup"
 
     model = utils.build_transformer()
 
-    lr = 6e-6
+    lr = 6e-4
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
@@ -123,14 +123,13 @@ def main():
 
     if should_restore_checkpoint:
         exp = f"{exp_name}_{unique_id}"
+        # cp_path = f"checkpoints/{exp}_latest_checkpoint.pth"
+        cp_path = "checkpoint_b109375_e0.pth"
+
         # state = load_latest_checkpoint_from_bucket(
         # exp=exp, model=model, optimizer=optimizer
         # )
-        state = restore_checkpoint(
-            f"checkpoints/{exp}_latest_checkpoint.pth",
-            model=model,
-            optimizer=optimizer,
-        )
+        state = restore_checkpoint(cp_path, model=model, optimizer=optimizer,)
 
         if state is not None:
             start_epoch = state["epoch"]
