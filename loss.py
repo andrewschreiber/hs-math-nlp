@@ -28,10 +28,7 @@ def compute_loss(pred, gold, smoothing):
         eps = 0.1
         n_class = pred.size(1)
 
-        zeros = torch.zeros_like(pred)
-        gold_view = gold.view(-1, 1)
-        one_hot = zeros.scatter(1, gold_view, 1)
-        # one_hot = torch.zeros_like(pred).scatter(1, gold.view(-1, 1), 1)
+        one_hot = torch.zeros_like(pred).scatter(1, gold.view(-1, 1), 1)
         one_hot = one_hot * (1 - eps) + (1 - one_hot) * eps / (n_class - 1)
         log_prb = F.log_softmax(pred, dim=1)
 

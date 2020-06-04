@@ -72,24 +72,6 @@ def np_decode_string(chars, char0=ord(" ")):
     return s
 
 
-def getQuestionsAnswersFromFile(filepath, max_elements=None):
-    count = 0
-    with open(filepath) as datafile:
-        questions = []
-        answers = []
-        for line in datafile:
-            line = line.rstrip("\n")
-            if max_elements is not None and count == (2 * max_elements):
-                return questions, answers
-            if count % 2 == 0:
-                questions.append(line)
-            else:
-                answers.append(line)
-            count += 1
-        print(f"{len(questions)} questions in {filepath}")
-        return questions, answers
-
-
 class LazyFileMathDataset(data.Dataset):
     """Stream loads math dataset file in a lazy way (optional)
     pandas is used for naive streaming as Python doesn't provide any better tool for that critical feature"""
@@ -103,7 +85,7 @@ class LazyFileMathDataset(data.Dataset):
         self.category, self.module = fn.split("__")
 
         if not self.lazy_load:
-            self._build_dataset()
+            self.build_dataset()
             if log:
                 print(
                     f"Initialized MathDataset with file {self.file} (category:{self.category}, module:{self.module}) containing {self.qas.shape[0]} pairs of questions/answers"
@@ -122,8 +104,6 @@ class LazyFileMathDataset(data.Dataset):
         self._build_dataset()
 
     def _build_dataset(self):
-        if self.qas is not None:
-            raise ValueError("Attempting to build dataset twice")
         if self.max_elements is not None:
             self.df_max = self.df.iloc[0 : self.max_elements * 2]
         else:
@@ -163,7 +143,8 @@ class LazyFileMathDataset(data.Dataset):
 
     def __getitem__(self, idx):
         if self.qas is None:
-            self._read_build_dataset()
+            raise ValueError("qas is none in __getitem__")
+            # self._read_build_dataset()
         question, answer = self.qas.iloc[idx]
         return {
             "q": question,
@@ -174,7 +155,8 @@ class LazyFileMathDataset(data.Dataset):
 
     def __len__(self):
         if self.qas is None:
-            self._read_build_dataset()
+            raise ValueError("qas is none in __len__")
+            # self._read_build_dataset()
         return self.qas.shape[0]
 
 
@@ -292,6 +274,25 @@ class MathDatasetManager:
 
         return data.ConcatDataset(ds)
 
+    def build_dataset_full(self):
+        """Builds the entire dataset"""
+        ds = []
+        for typ in ["train-easy", "train-medium", "train-hard"]:
+            for c in [
+                "algebra",
+                "numbers",
+                "polynomials",
+                "arithmetic",
+                "measurement",
+                "comparison",
+                "probability",
+                "calculus",
+            ]:
+                print(f"adding category {c}/../{typ}")
+                dss = self._build_datasets_from_category(c, typ)
+                ds.extend(dss)
+        return data.ConcatDataset(ds)
+
     def build_dataset_from_level(self, level):
         """Builds the dataset for a level"""
         ds = []
@@ -323,44 +324,6 @@ class MathDatasetManager:
             ds.append(self.dfs[category][module][typ])
         return data.ConcatDataset(ds)
 
-        # for questions, answers in qas:
-        #     data["questions"].extend(questions)
-        #     data["answers"].extend(answers)
-        #     data["original_index"] = data_index
-        #     data_index += 1
-        # print(data)
-
-
-class BenchmarkDatasetManager:
-    def __init__(self, root_dir):
-        self.root_dir = Path(root_dir)
-        self.interpolate_files = self._get_files("interpolate")
-        self.extrapolate_files = self._get_files("extrapolate")
-
-    def _get_files(self, directory):
-        return [
-            ff
-            for ff in glob.glob(
-                str(self.root_dir / directory) + "**/*.txt", recursive=True
-            )
-        ]
-
-    def get_datasets(self, mode):
-        datasets = {}
-        if mode == "interpolate":
-            files = self.interpolate_files
-        elif mode == "extrapolate":
-            files = self.extrapolate_files
-        else:
-            raise ValueError(f"Invalid mode {mode}.")
-
-        for f in files:
-            ds = LazyFileMathDataset(f, lazy_load=True, log=False)
-            module = f.split("/")[-1].split(".")[0]
-            datasets[module] = ds
-
-        return datasets
-
 
 class FullDatasetManager(data.Dataset):
     def __init__(
@@ -371,7 +334,6 @@ class FullDatasetManager(data.Dataset):
         start_epoch=0,
         start_datapoint=0,
         mode="train",
-        shuffle=True,
     ):
         self.root_dir = Path(root_dir)
         self.full_df = None
@@ -422,12 +384,10 @@ class FullDatasetManager(data.Dataset):
                     data["original_index"] = data_index
                     data_index += 1
 
-        print("Placing data in dataframe...")
+        print("Placing data in dataframe and shuffling...")
         self.full_df = pd.DataFrame(data)
-        if shuffle:
-            print("Shuffling...")
-            for i in range(start_epoch + 1):
-                self.shuffleData()
+        for i in range(start_epoch + 1):
+            self.shuffleData()
 
         print(
             f"Took {time.time() - start} seconds to initialize dataset of length {self.full_df.shape[0]}. Deterministic: {deterministic}. Mode {mode}"
@@ -435,21 +395,29 @@ class FullDatasetManager(data.Dataset):
 
     def shuffleData(self):
         # Will shuffle deterministically if numpy seed is set
-        # TODO: Try faster deterministic shuffles. Takes 1.5-2min on 112mil dataset
         start = time.time()
-        permuted = np.random.permutation(self.full_df.index)
-        print(f"Speed of shuffling dataset (permutation): {time.time() - start}s")
-        start = time.time()
-        self.full_df = self.full_df.reindex(permuted)  # ~10x slower step than above
-        print(
-            f"Speed of shuffling dataset (reindexing): {(time.time() - start)} seconds"
-        )
+        self.full_df = self.full_df.reindex(np.random.permutation(self.full_df.index))
+        print(f"Speed of shuffling dataset: {(time.time() - start)} seconds")
 
     def endEpoch(self):
         self.start_datapoint = 0
 
     def _getQuestionsAnswersFromFile(self, filepath):
-        return getQuestionsAnswersFromFile(filepath, self.max_elements)
+        count = 0
+        with open(filepath) as datafile:
+            questions = []
+            answers = []
+            for line in datafile:
+                line = line.rstrip("\n")
+                if self.max_elements is not None and count == (2 * self.max_elements):
+                    return questions, answers
+                if count % 2 == 0:
+                    questions.append(line)
+                else:
+                    answers.append(line)
+                count += 1
+            print(f"{len(questions)} questions in {filepath}")
+            return questions, answers
 
     def __getitem__(self, idx):
         idx = idx + self.start_datapoint
@@ -589,84 +557,3 @@ def question_to_position_batch_collate_fn(qs):
     batch_qs_pos = torch.LongTensor(batch_qs_pos)
 
     return batch_qs, batch_qs_pos
-
-
-def benchmark_collate_fn(batch):
-    """ Gather + Pad the question to the max seq length in batch. For Benchmarking. """
-
-    max_q_len = max(len(d["q_enc"]) for d in batch)
-
-    batch_qs = []
-    batch_string_as = []
-
-    for d in batch:
-        batch_string_as.append(d["a"])
-
-        q = d["q_enc"]
-        pad_width = (0, max_q_len - len(q))
-        padded = np.pad(q, pad_width, mode="constant", constant_values=Constants.PAD,)
-        batch_qs.append(padded)
-
-    batch_qs_pos = np.array(
-        [
-            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(q)]
-            for q in batch_qs
-        ]
-    )
-
-    batch_qs = torch.LongTensor(batch_qs)
-    batch_qs_pos = torch.LongTensor(batch_qs_pos)
-
-    return batch_qs, batch_qs_pos, batch_string_as
-
-
-def lstm_batch_collate_fn(qas):
-    """ Gather + Pad the question/answer to the max seq length in dataset """
-
-    # start = time.time()
-    max_q_len = MAX_QUESTION_SZ
-    max_a_len = MAX_ANSWER_SZ
-
-    batch_qs = []
-    batch_as = []
-    for qa in qas:
-        batch_qs.append(
-            np.pad(
-                qa["q_enc"],
-                (0, max_q_len - len(qa["q_enc"])),
-                mode="constant",
-                constant_values=Constants.PAD,
-            )
-        )
-        batch_as.append(
-            np.pad(
-                qa["a_enc"],
-                (0, max_a_len - len(qa["a_enc"])),
-                mode="constant",
-                constant_values=Constants.PAD,
-            )
-        )
-
-    batch_qs_pos = np.array(
-        [
-            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(q)]
-            for q in batch_qs
-        ]
-    )
-
-    batch_as_pos = np.array(
-        [
-            [pos_i + 1 if w_i != Constants.PAD else 0 for pos_i, w_i in enumerate(a)]
-            for a in batch_as
-        ]
-    )
-
-    batch_qs = torch.LongTensor(batch_qs)
-    batch_qs_pos = torch.LongTensor(batch_qs_pos)
-
-    batch_as = torch.LongTensor(batch_as)
-    batch_as_pos = torch.LongTensor(batch_as_pos)
-
-    # print(f"Collate took {time.time() - start}s")
-
-    return batch_qs, batch_qs_pos, batch_as, batch_as_pos
