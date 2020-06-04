@@ -85,7 +85,7 @@ def main():
 
     deterministic = True
     if deterministic:
-        seed = 42
+        seed = 13
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         random.seed(seed)
