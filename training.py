@@ -102,7 +102,7 @@ def main():
 
     model = utils.build_transformer()
 
-    lr = 6e-4
+    lr = 6e-6
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
@@ -162,8 +162,10 @@ def main():
 
     model = model.to(device)
 
+    dataset_path = "./mathematics_dataset-v1.0"
+
     ds_train = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
+        dataset_path,
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -172,7 +174,7 @@ def main():
     print("Train size:", len(ds_train))
 
     ds_interpolate = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
+        dataset_path,
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -181,7 +183,7 @@ def main():
     print("Interpolate size:", len(ds_interpolate))
 
     ds_extrapolate = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
+        dataset_path,
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,

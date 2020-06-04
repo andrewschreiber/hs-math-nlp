@@ -26,6 +26,8 @@ echo "python training.py >> /dev/ttyS1" | at now
 
 sleep 1
 
-echo "python3 -m tensorboard.main --logdir=runs" | at now
+cd ..
+
+echo "python3 -m tensorboard.main --logdir=hs-math-nlp-master/runs" | at now
 
 echo "~~~~~~~ Completed startup script ~~~~~~~"
