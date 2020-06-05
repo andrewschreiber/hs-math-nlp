@@ -13,7 +13,6 @@ from math_dataset import (
     lstm_batch_collate_fn,
     MathDatasetManager,
     FullDatasetManager,
-
 )
 
 from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
@@ -47,38 +46,42 @@ train_loader = torch.utils.data.DataLoader(
     collate_fn=lstm_batch_collate_fn,
 )
 
+
 # Define Model Architecture
 class TextLSTM(nn.Module):
     def __init__(self):
         super(TextLSTM, self).__init__()
-        self.lstm = nn.LSTM(VOCAB_SZ, num_hidden,1)
+        self.lstm = nn.LSTM(VOCAB_SZ, num_hidden, 1)
 
         self.tgt_word_prj = nn.Linear(2048, VOCAB_SZ, bias=False)
         self.q_to_a = nn.Linear(162, 31)
-        #nn.init.xavier_normal_(self.tgt_word_prj.weight)
+        # nn.init.xavier_normal_(self.tgt_word_prj.weight)
 
     def forward(self, batch_qs, batch_qs_pos, batch_as, batch_as_pos):
         # To Do: Change this input forward pass to match inputs
         batch_size = len(batch_qs)
         batch_qs = torch.transpose(batch_qs, 0, 1)
         batch_qs = torch.nn.functional.one_hot(batch_qs, VOCAB_SZ)
-        hidden_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float))
-        cell_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float)) 
-        batch_qs = batch_qs.float() # (162, 16, 95)
-        output_seq = torch.empty((MAX_QUESTION_SZ, 
-                                  16, 
-                                  VOCAB_SZ))
-        for t in range(MAX_QUESTION_SZ):          
-            outputs, (_, _) = self.lstm(batch_qs[t].unsqueeze(0) , (hidden_state, cell_state))
+        hidden_state = Variable(
+            torch.zeros(1, batch_size, num_hidden, dtype=torch.float)
+        )
+        cell_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float))
+        batch_qs = batch_qs.float()  # (162, 16, 95)
+        output_seq = torch.empty((MAX_QUESTION_SZ, 16, VOCAB_SZ))
+        for t in range(MAX_QUESTION_SZ):
+            outputs, (_, _) = self.lstm(
+                batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
+            )
             output_seq[t] = self.tgt_word_prj(outputs)
-            
-        seq_logit_q_length = output_seq.permute(2,1,0)
+
+        seq_logit_q_length = output_seq.permute(2, 1, 0)
         seq_logit_a_length = self.q_to_a(seq_logit_q_length)
-        seq_logit_a_length = seq_logit_a_length.permute(2,1,0)
-        batch_ans_size = seq_logit_a_length.size(2)   #batch_size x answer_length
+        seq_logit_a_length = seq_logit_a_length.permute(2, 1, 0)
+        batch_ans_size = seq_logit_a_length.size(2)  # batch_size x answer_length
         seq_logit_new = seq_logit_a_length.reshape(-1, batch_ans_size)
-        
+
         return seq_logit_new
+
 
 model = TextLSTM()
 # Specify optimizations algs
