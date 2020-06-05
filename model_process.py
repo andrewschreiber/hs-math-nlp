@@ -130,7 +130,7 @@ def train(
                 optimizer=optimizer,
                 acc=train_accu,
                 loss=train_loss,
-                epoch=epoch_i,
+                epoch=epoch_i if not done and checkpoint else epoch_i + 1,
                 run_batches=run_batches,
                 # is_preempted=utils.is_preempted(),
                 start_batch=0,
