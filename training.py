@@ -85,7 +85,7 @@ def main():
 
     deterministic = True
     if deterministic:
-        seed = 42
+        seed = 0
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         random.seed(seed)
@@ -98,7 +98,7 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "5-25-20_transformer4"
+    unique_id = "6-4-20_transformer_warmup"
 
     model = utils.build_transformer()
 
@@ -123,14 +123,13 @@ def main():
 
     if should_restore_checkpoint:
         exp = f"{exp_name}_{unique_id}"
+        # cp_path = f"checkpoints/{exp}_latest_checkpoint.pth"
+        cp_path = "checkpoint_b109375_e0.pth"
+
         # state = load_latest_checkpoint_from_bucket(
         # exp=exp, model=model, optimizer=optimizer
         # )
-        state = restore_checkpoint(
-            f"checkpoints/{exp}_latest_checkpoint.pth",
-            model=model,
-            optimizer=optimizer,
-        )
+        state = restore_checkpoint(cp_path, model=model, optimizer=optimizer,)
 
         if state is not None:
             start_epoch = state["epoch"]
@@ -162,8 +161,10 @@ def main():
 
     model = model.to(device)
 
+    dataset_path = "./mathematics_dataset-v1.0"
+
     ds_train = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
+        dataset_path,
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -172,7 +173,7 @@ def main():
     print("Train size:", len(ds_train))
 
     ds_interpolate = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
+        dataset_path,
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
@@ -181,7 +182,7 @@ def main():
     print("Interpolate size:", len(ds_interpolate))
 
     ds_extrapolate = FullDatasetManager(
-        "./mathematics_dataset-v1.0",
+        dataset_path,
         max_elements=max_elements,
         deterministic=deterministic,
         start_epoch=start_epoch,
