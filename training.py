@@ -169,7 +169,7 @@ def main():
 
     model = model.to(device)
 
-    dataset_path = "../hs-math-nlp/mathematics_dataset-v1.0"
+    dataset_path = "./mathematics_dataset-v1.0"
 
     ds_train = FullDatasetManager(
         dataset_path,

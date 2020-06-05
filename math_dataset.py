@@ -405,6 +405,10 @@ class FullDatasetManager(data.Dataset):
             for ff in glob.glob(str(dir) + "/**/*.txt", recursive=True)
         ]
         print(f"File count: {len(files)}")
+        if len(files) == 0:
+            raise ValueError(
+                f"No files found. Are you sure {self.root_dir} is the correct root directory?"
+            )
         data_index = 0
         if deterministic:
             for questions, answers in map(self._getQuestionsAnswersFromFile, files):
