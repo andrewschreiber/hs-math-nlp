@@ -141,6 +141,9 @@ def main():
             best_acc = state["acc"]
             best_loss = state["loss"]
             run_batches = state["run_batches"]
+            lr = state["lr"]
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = lr
 
             start_batch = state.get("start_batch", None) or 0
             total_loss = state.get("total_loss", None) or 0

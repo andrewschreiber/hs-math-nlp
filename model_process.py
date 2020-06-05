@@ -134,6 +134,7 @@ def train(
                 run_batches=run_batches,
                 # is_preempted=utils.is_preempted(),
                 start_batch=0,
+                lr=lr,
             )
 
             if utils.is_cloud():
@@ -219,6 +220,7 @@ def train_epoch(
         if warmup_interval is not None and batch_idx == warmup_interval:
             for param_group in optimizer.param_groups:
                 print(f"param group: {param_group}. lr {param_group['lr']}")
+                warmup_lr = lr
                 param_group["lr"] = lr
 
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
@@ -300,6 +302,7 @@ def train_epoch(
                 total_loss=total_loss,
                 n_char_total=n_char_total,
                 n_char_correct=n_char_correct,
+                lr=warmup_lr,
             )
 
             save_checkpoint(

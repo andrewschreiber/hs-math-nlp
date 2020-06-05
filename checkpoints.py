@@ -94,6 +94,7 @@ def build_checkpoint(
     loss,
     epoch,
     run_batches,
+    lr,
     tpe="training",
     is_preempted=False,
     start_batch=0,
@@ -115,6 +116,7 @@ def build_checkpoint(
         "total_loss": total_loss,
         "n_char_total": n_char_total,
         "n_char_correct": n_char_correct,
+        "lr": lr,
     }
 
 
