@@ -49,6 +49,9 @@ def train(
     run_max_batches=None,
     extrapolate_data=None,
     checkpoint=True,
+    lr=None,
+    warmup_lr=None,
+    warmup_interval=None,
 ):
     print("~~~ Beginning Training ~~~~")
     print(
@@ -78,6 +81,9 @@ def train(
             total_loss=total_loss,
             n_char_total=n_char_total,
             n_char_correct=n_char_correct,
+            lr=lr,
+            warmup_lr=warmup_lr,
+            warmup_interval=warmup_interval,
         )
 
         run_batches = new_batch_count
@@ -187,6 +193,9 @@ def train_epoch(
     total_loss=0,
     n_char_total=0,
     n_char_correct=0,
+    lr=None,
+    warmup_lr=None,
+    warmup_interval=None,
 ):
 
     training_iter = iter(training_data)
@@ -206,6 +215,11 @@ def train_epoch(
         if utils.is_preempted():
             print("Exiting...")
             sys.exit(0)
+
+        if warmup_interval is not None and batch_idx == warmup_interval:
+            for param_group in optimizer.param_groups:
+                print(f"param group: {param_group}. lr {param_group['lr']}")
+                param_group["lr"] = lr
 
         batch_qs, batch_qs_pos, batch_as, batch_as_pos = map(
             lambda x: x.to(device), batch

@@ -98,21 +98,26 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-4-20_transformer_warmup"
+    unique_id = "6-5-20_transformer"
 
     model = utils.build_transformer()
 
     lr = 6e-4
+    warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
+    warmup_interval = 10000
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
 
     print(
-        f"Learning rate {lr}. B low {beta_coeff_low}. B high {beta_coeff_high}. eps{eps}"
+        f"Learning rate {lr}. Warmup_lr: {warmup_lr}. Warmup batches interval: {warmup_interval}/ B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}"
     )
 
     optimizer = optim.Adam(
-        model.parameters(), lr=lr, betas=(beta_coeff_low, beta_coeff_high), eps=eps
+        model.parameters(),
+        lr=warmup_lr,
+        betas=(beta_coeff_low, beta_coeff_high),
+        eps=eps,
     )
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
@@ -123,8 +128,8 @@ def main():
 
     if should_restore_checkpoint:
         exp = f"{exp_name}_{unique_id}"
-        # cp_path = f"checkpoints/{exp}_latest_checkpoint.pth"
-        cp_path = "checkpoint_b109375_e0.pth"
+        cp_path = f"checkpoints/{exp}_latest_checkpoint.pth"
+        # cp_path = "checkpoint_b109375_e0.pth"
 
         # state = load_latest_checkpoint_from_bucket(
         # exp=exp, model=model, optimizer=optimizer
@@ -161,7 +166,7 @@ def main():
 
     model = model.to(device)
 
-    dataset_path = "./mathematics_dataset-v1.0"
+    dataset_path = "../hs-math-nlp/mathematics_dataset-v1.0"
 
     ds_train = FullDatasetManager(
         dataset_path,
@@ -247,6 +252,9 @@ def main():
         interpolate_data=interpolate_loader,
         extrapolate_data=extrapolate_loader,
         checkpoint=True,  # Only save on GPUs
+        lr=lr,
+        warmup_lr=warmup_lr,
+        warmup_interval=warmup_interval,
     )
 
 
