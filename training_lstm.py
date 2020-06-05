@@ -46,6 +46,7 @@ train_loader = torch.utils.data.DataLoader(
     collate_fn=lstm_batch_collate_fn,
 )
 
+
 # Define Model Architecture
 class TextLSTM(nn.Module):
     def __init__(self):
