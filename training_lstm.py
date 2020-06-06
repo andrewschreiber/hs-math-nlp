@@ -76,10 +76,17 @@ class TextLSTM(nn.Module):
         batch_qs = batch_qs.float()  # (162, 16, 95)
 
         output_seq = torch.empty((MAX_ANSWER_SZ - 1, 16, VOCAB_SZ))
+
         # Input question phase
         for t in range(MAX_QUESTION_SZ):
             outputs, (hidden_state, cell_state) = self.lstm(
                 batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
+            )
+        # Extra 15 Computational Steps
+        dummy_input = torch.zeros(1, batch_size, VOCAB_SZ, dtype=torch.float)
+        for t in range(15):
+            outputs_junk, (hidden_state, cell_state) = self.lstm(
+                dummy_input, (hidden_state, cell_state)
             )
         # Answer generation phase, need to input correct answer as hidden/cell state, find what to put in input
         for t in range(MAX_ANSWER_SZ - 1):
