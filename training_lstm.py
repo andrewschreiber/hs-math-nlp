@@ -68,12 +68,18 @@ class TextLSTM(nn.Module):
         cell_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float))
         batch_qs = batch_qs.float()  # (162, 16, 95)
         output_seq = torch.empty((MAX_QUESTION_SZ, 16, VOCAB_SZ))
+        # Input question phase
         for t in range(MAX_QUESTION_SZ):
-            outputs, (_, _) = self.lstm(
+            outputs, (hidden_state, cell_state) = self.lstm(
                 batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
             )
+        # Answer generation phase, need to input correct answer as hidden/cell state, find what to put in input    
+        for t in range(MAX_ANSWER_SZ):
             output_seq[t] = self.tgt_word_prj(outputs)
-
+            outputs, (hidden_state, cell_state) = self.lstm(
+                batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
+            )
+        
         seq_logit_q_length = output_seq.permute(2, 1, 0)
         seq_logit_a_length = self.q_to_a(seq_logit_q_length)
         seq_logit_a_length = seq_logit_a_length.permute(2, 1, 0)
@@ -100,7 +106,8 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 #     max_batches=max_batches,
 #     validation_data=None,
 # )
-
+#TODO: 
+# Rejigger weight loss calculation as it is different from transformer. 
 model_process.train(
     name=f"{exp_name}_{unique_id}",
     model=model,
