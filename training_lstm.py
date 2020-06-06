@@ -55,6 +55,7 @@ class TextLSTM(nn.Module):
 
         self.tgt_word_prj = nn.Linear(2048, VOCAB_SZ, bias=False)
         self.q_to_a = nn.Linear(162, 31)
+
         # nn.init.xavier_normal_(self.tgt_word_prj.weight)
 
     def forward(self, batch_qs, batch_qs_pos, batch_as, batch_as_pos):
@@ -84,8 +85,9 @@ class TextLSTM(nn.Module):
         for t in range(MAX_ANSWER_SZ - 1):
             if t == 0:
                 output_seq[t] = self.tgt_word_prj(outputs)
+                char = output_seq[t].clone().unsqueeze(0)
                 outputs, (hidden_state, cell_state) = self.lstm(
-                    output_seq[t].unsqueeze(0), (hidden_state, cell_state)
+                    char, (hidden_state, cell_state)
                 )
             else:
                 output_seq[t] = self.tgt_word_prj(outputs)
