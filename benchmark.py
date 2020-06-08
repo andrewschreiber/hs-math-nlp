@@ -23,7 +23,7 @@ def main():
 
     if not torch.cuda.is_available():
         device = torch.device("cpu")
-        batch_size = 128
+        batch_size = 1
     else:
         device = torch.device("cuda")
         batch_size = 1024
