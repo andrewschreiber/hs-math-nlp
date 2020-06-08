@@ -409,7 +409,7 @@ def predict_benchmark(generator, data, device, max_predictions=None):
             resp = {"correct": c, "guess": g, "answer": a, "score": s}
             resps.append(resp)
 
-        print(f"Batch time {time.time() - start}s")
+        print(f"Batch {batch_idx} time {time.time() - start}s. {resp}")
 
     return resps
 
