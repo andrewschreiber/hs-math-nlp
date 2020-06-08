@@ -52,6 +52,7 @@ def train(
     lr=None,
     warmup_lr=None,
     warmup_interval=None,
+    smoothing=False,
 ):
     print("~~~ Beginning Training ~~~~")
     print(
@@ -84,6 +85,7 @@ def train(
             lr=lr,
             warmup_lr=warmup_lr,
             warmup_interval=warmup_interval,
+            smoothing=smoothing,
         )
 
         run_batches = new_batch_count
@@ -197,6 +199,7 @@ def train_epoch(
     lr=None,
     warmup_lr=None,
     warmup_interval=None,
+    smoothing=False,
 ):
 
     training_iter = iter(training_data)
@@ -232,7 +235,7 @@ def train_epoch(
         optimizer.zero_grad()
         pred_as = model(batch_qs, batch_qs_pos, batch_as, batch_as_pos)
 
-        loss, n_correct = compute_performance(pred_as, gold_as, smoothing=True)
+        loss, n_correct = compute_performance(pred_as, gold_as, smoothing=smoothing)
 
         loss.backward()
 

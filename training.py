@@ -98,19 +98,20 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-5-20_transformer_warmup"
+    unique_id = "6-8-20_transformer_warmup"
 
     model = utils.build_transformer()
 
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
-    warmup_interval = 10000
+    warmup_interval = 20000
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
+    smoothing = False
 
     print(
-        f"Learning rate {lr}. Warmup_lr: {warmup_lr}. Warmup batches interval: {warmup_interval}/ B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}"
+        f"Learning rate {lr}. Warmup_lr: {warmup_lr}. Warmup batches interval: {warmup_interval}/ B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}. Smoothing: {smoothing}"
     )
 
     optimizer = optim.Adam(
@@ -258,6 +259,7 @@ def main():
         lr=lr,
         warmup_lr=warmup_lr,
         warmup_interval=warmup_interval,
+        smoothing=smoothing,
     )
 
 
