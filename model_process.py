@@ -7,7 +7,7 @@ import sys
 import torch
 from torch.utils import data
 import utils
-from torch.nn.utils import clip_grad_norm_
+from torch.nn.utils import clip_grad_value_
 
 # import torch.nn.functional as F
 from transformer import Constants
@@ -240,7 +240,7 @@ def train_epoch(
         loss.backward()
 
         # Clip gradients, paper uses 0.1
-        clip_grad_norm_(model.parameters(), 0.1)
+        clip_grad_value_(model.parameters(), 0.1)
 
         # update parameters
         optimizer.step()
