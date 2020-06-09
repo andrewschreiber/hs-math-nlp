@@ -10,11 +10,14 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn.functional as F
+import model_process
 from math_dataset import (
-    question_answer_to_position_batch_collate_fn,
+    lstm_batch_collate_fn,
     MathDatasetManager,
     FullDatasetManager,
 )
+
+from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
 
 dtype = torch.FloatTensor
 
@@ -25,55 +28,87 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 
 # Uni-LSTM(Attention) Parameters
 embedding_dim = 2
-max_sentence_length = 50 
+max_sentence_length = 50
 max_elements = 100
 n_step = 1
-num_hidden = 128
+decoder_num_hidden = 2048
+encoder_num_hidden = 512
 max_batches = 1
 num_workers = 0
 
 exp_name = "math_test"
-unique_id = "02-24-2020"
+unique_id = "06-08-2020"
 
 # 3 words sentences (=sequence_length is 3)
 
-mdsmgr = MathDatasetManager("./mathematics_dataset-v1.0")
-ds_train = mdsmgr.build_dataset_from_module("algebra", "linear_1d", "train-easy", max_elements=max_elements)
-
-train_loader = torch.utils.data.DataLoader(ds_train, batch_size=1024,
-                        shuffle=True, num_workers=0) 
-    
 tb = Tensorboard(exp_name, unique_name=unique_id)
+
+ds_train = FullDatasetManager(
+    "./mathematics_dataset-v1.0", max_elements=10, deterministic=True,
+)
+
+train_loader = torch.utils.data.DataLoader(
+    ds_train,
+    batch_size=16,
+    shuffle=True,
+    num_workers=num_workers,
+    collate_fn=lstm_batch_collate_fn,
+)
+
 
 class UniLSTM_Attention(nn.Module):
     def __init__(self):
         super(UniLSTM_Attention, self).__init__()
 
-        self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.lstm = nn.LSTM(embedding_dim, num_hidden, bidirectional=False)
-        self.out = nn.Linear(1)
+        self.embedding = nn.Embedding(VOCAB_SZ, embedding_dim)
+        self.decoding_lstm = nn.LSTM(embedding_dim, decoder_num_hidden, bidirectional=False)
+        self.encoding_lstm = nn.LSTM(embedding_dim, encoder_num_hidden, bidirectional=False)
+        self.encoder_fc = nn.Linear(encoder_num_hidden * 2, decoder_num_hidden)  # Don't thin I want the n * 2
+        self.decoder_fc = nn.Linear(decoder_num_hidden * 2, VOCAB_SZ)
 
     # lstm_output : [batch_size, n_step, num_hidden * num_directions(=2)], F matrix
     def attention_net(self, lstm_output, final_state):
         hidden = final_state.view(-1, num_hidden * 2, 1)   # hidden : [batch_size, num_hidden * num_directions(=2), 1(=n_layer)]
-        attn_weights = torch.bmm(lstm_output, hidden).squeeze(2) # attn_weights : [batch_size, n_step]
+        attn_weights = torch.bmm(lstm_output, hidden).squeeze(2)  # attn_weights : [batch_size, n_step]
         soft_attn_weights = F.softmax(attn_weights, 1)
         # [batch_size, num_hidden * num_directions(=2), n_step] * [batch_size, n_step, 1] = [batch_size, num_hidden * num_directions(=2), 1]
         context = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
-        return context, soft_attn_weights.data.numpy() # context : [batch_size, num_hidden * num_directions(=2)]
+        return context, soft_attn_weights.data.numpy()  # context : [batch_size, num_hidden * num_directions(=2)]
 
-    def forward(self, X):
-        input = self.embedding(X) # input : [batch_size, len_seq, embedding_dim]
-        input = input.permute(1, 0, 2) # input : [len_seq, batch_size, embedding_dim]
+    def forward(self, batch_qs, batch_qs_pos, batch_as, batch_as_pos):
+        batch_size = len(batch_qs)
+        batch_qs = torch.transpose(batch_qs, 0, 1)
+        batch_qs = torch.nn.functional.one_hot(batch_qs, VOCAB_SZ)
+        input = self.embedding(batch_qs)  # input : [batch_size, len_seq, embedding_dim]
+        input = input.permute(1, 0, 2)  # input : [len_seq, batch_size, embedding_dim]
 
-        hidden_state = Variable(torch.zeros(1*2, len(X), num_hidden)) # [num_layers(=1) * num_directions(=2), batch_size, num_hidden]
-        cell_state = Variable(torch.zeros(1*2, len(X), num_hidden)) # [num_layers(=1) * num_directions(=2), batch_size, num_hidden]
+        hidden_state = Variable(
+            torch.zeros(1, batch_size, encoder_num_hidden, dtype=torch.float)
+        )
+        cell_state = Variable(torch.zeros(1, batch_size, encoder_num_hidden, dtype=torch.float))
 
-        # final_hidden_state, final_cell_state : [num_layers(=1) * num_directions(=2), batch_size, num_hidden]
-        output, (final_hidden_state, final_cell_state) = self.lstm(input, (hidden_state, cell_state))
-        output = output.permute(1, 0, 2) # output : [batch_size, len_seq, num_hidden        ]
-        attn_output, attention = self.attention_net(output, final_hidden_state)
-        return self.out(attn_output), attention # model : [batch_size, num_classes], attention : [batch_size, n_step]
+        output, hidden = self.encoding_lstm(
+            input, (hidden_state, cell_state)
+        )
+
+        hidden_state = Variable(
+            torch.zeros(1, batch_size, decoder_num_hidden, dtype=torch.float)
+        )
+        cell_state = Variable(torch.zeros(1, batch_size, decoder_num_hidden, dtype=torch.float))
+
+        output = output.permute(1, 0, 2)  # output : [batch_size, len_seq, num_hidden        ]
+        attn_output, attention = self.attention_net(output, hidden)
+
+        hidden_state = Variable(
+            torch.zeros(1, batch_size, decoder_num_hidden, dtype=torch.float)
+        )
+        cell_state = Variable(torch.zeros(1, batch_size, decoder_num_hidden, dtype=torch.float))
+
+        decoder_input = torch.cat((answer_shift, attn_output), dim=2)
+
+        decoder_out = self.decoding_lstm(decoder_input, (hidden_state, cell_state))
+        return self.decoder_fc(decoder_out)
+
 
 model = UniLSTM_Attention()
 
@@ -81,17 +116,14 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 model_process.train(
-        exp_name=exp_name,
-        unique_id=unique_id,
-        model=model,
-        training_data=train_loader,
-        optimizer=optimizer,
-        device=device,
-        epochs=1,
-        tb=tb,
-        max_batches=max_batches,
-        validation_data=None,
-    )
+    name=f"{exp_name}_{unique_id}",
+    model=model,
+    training_data=train_loader,
+    optimizer=optimizer,
+    device=device,
+    epochs=1000,  # Not relevant, will get ended before this due to max_b
+    tb=tb,
+)
 
 # # Training
 # for epoch in range(5000):
@@ -116,4 +148,3 @@ model_process.train(
 #     print(test_text,"is Bad Mean...")
 # else:
 #     print(test_text,"is Good Mean!!")
-    
