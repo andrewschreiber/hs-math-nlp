@@ -98,13 +98,13 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-8-20_transformer_warmup"
+    unique_id = "6-8-20_transformer"
 
     model = utils.build_transformer()
 
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
-    warmup_interval = 20000
+    warmup_interval = None
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
@@ -116,7 +116,7 @@ def main():
 
     optimizer = optim.Adam(
         model.parameters(),
-        lr=warmup_lr,
+        lr=lr if warmup_interval is None else warmup_lr,
         betas=(beta_coeff_low, beta_coeff_high),
         eps=eps,
     )

@@ -60,7 +60,7 @@ def is_cloud():
 
 def shutdown():
     if is_cloud():
-        print("Shutting down in 30 seconds...")
-        time.sleep(30)
+        print("Shutting down in 60 seconds...")
+        time.sleep(60)
         print(f"Shutting down at {time.time()}")
         os.system("sudo shutdown -h now")

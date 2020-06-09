@@ -30,6 +30,7 @@ def main():
         batch_size = 1024
     print("Device", device)
     print("Batch size", batch_size)
+    print("Is_cloud:", utils.is_cloud())
 
     workspace_folder = (
         CLOUD_WORKSPACE_FOLDER if utils.is_cloud() else LOCAL_WORKSPACE_FOLDER
