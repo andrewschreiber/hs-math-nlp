@@ -6,6 +6,7 @@ import model_process
 import utils
 from torch.utils import data
 import traceback
+import sys
 
 from transformer.Generator import Generator
 from math_dataset import (
@@ -45,6 +46,11 @@ def main():
     if state is None:
         print("Ending run without checkpoint")
         exit(0)
+
+    if False:
+        question = "What is 25 + 35?"
+        print(model_process.predict_single(question, model, device, n_best=5))
+        sys.exit(0)
 
     ds_path = f"{workspace_folder}/mathematics_dataset-v1.0"
     benchmark = BenchmarkDatasetManager(ds_path)
