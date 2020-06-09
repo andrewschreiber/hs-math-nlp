@@ -58,8 +58,9 @@ class MultiHeadAttention(nn.Module):
             output.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1)
         )  # b x lq x (n*dv)
 
+        output = self.fc(output)
         if self.dropout is not None:
-            output = self.dropout(self.fc(output))
+            output = self.dropout(output)
         output = self.layer_norm(output + residual)
 
         return output, attn
