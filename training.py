@@ -98,13 +98,13 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-9-20_transformer2"
+    unique_id = "6-9-20_transformer3"
 
     model = utils.build_transformer()
 
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
-    warmup_interval = None
+    warmup_interval = 10000
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
@@ -162,6 +162,7 @@ def main():
             print("start_batch", start_batch)
             print("best_acc", best_acc)
             print("best_loss", best_loss)
+            print(f"Setting lr to {lr}")
             print("Loaded checkpoint successfully")
 
     if torch.cuda.device_count() > 1:
