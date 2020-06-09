@@ -98,13 +98,13 @@ def main():
     print("Deterministic:", deterministic)
 
     exp_name = "math_112m_bs128"
-    unique_id = "6-9-20_transformer"
+    unique_id = "6-9-20_transformer2"
 
     model = utils.build_transformer()
 
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
-    warmup_interval = 20000
+    warmup_interval = None
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
