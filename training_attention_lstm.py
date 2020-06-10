@@ -55,6 +55,17 @@ train_loader = torch.utils.data.DataLoader(
     collate_fn=lstm_batch_collate_fn,
 )
 
+# TODO:
+# Find a way to split the hidden state of the encoder into key value pairs
+# Find a way to iteratively (for loop) apply attention to the key value pairs
+# Input them into the decoder with the shifted answer
+# Return new query pairs as well as an answer
+# Verify our attention function is correct
+
+# We're in a good state here and don't need to incorporate more example code
+# Pre-compile state, will have to play with the matrix shapes.
+
+
 
 class UniLSTM_Attention(nn.Module):
     def __init__(self):
@@ -63,8 +74,8 @@ class UniLSTM_Attention(nn.Module):
         self.embedding = nn.Embedding(VOCAB_SZ, embedding_dim)
         self.decoding_lstm = nn.LSTM(embedding_dim, decoder_num_hidden, bidirectional=False)
         self.encoding_lstm = nn.LSTM(embedding_dim, encoder_num_hidden, bidirectional=False)
-        self.encoder_fc = nn.Linear(encoder_num_hidden * 2, decoder_num_hidden)  # Don't thin I want the n * 2
-        self.decoder_fc = nn.Linear(decoder_num_hidden * 2, VOCAB_SZ)
+        self.encoder_fc = nn.Linear(encoder_num_hidden, decoder_num_hidden)
+        self.decoder_fc = nn.Linear(decoder_num_hidden, VOCAB_SZ)
 
     # lstm_output : [batch_size, n_step, num_hidden * num_directions(=2)], F matrix
     def attention_net(self, lstm_output, final_state):
