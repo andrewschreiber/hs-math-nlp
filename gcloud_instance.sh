@@ -26,17 +26,17 @@ gcloud compute project-info add-metadata \
     --metadata serial-port-enable=TRUE
 
 # Quick retesting dummy instance
-export INSTANCE_NAME="gpu-2-a" && \
+export INSTANCE_NAME="lstm-1" && \
 gcloud compute instances create $INSTANCE_NAME \
         --zone=$ZONE \
         --image-family=$IMAGE_FAMILY \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --machine-type=$INSTANCE_TYPE \
-        --boot-disk-size=200GB \
+        --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --accelerator=type=nvidia-tesla-v100,count=2 \
+        --accelerator=type=nvidia-tesla-v100,count=1 \
         --scopes="storage-rw,cloud-platform" \
         --metadata-from-file="startup-script=gce/startup.sh" \
 && gcloud compute connect-to-serial-port $INSTANCE_NAME
