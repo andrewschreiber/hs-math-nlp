@@ -221,8 +221,8 @@ def train_epoch(
             sys.exit(0)
 
         if warmup_interval is not None and batch_idx == warmup_interval:
+            print(f"End of warmup. Swapping learning rates from {warmup_lr} to {lr}")
             for param_group in optimizer.param_groups:
-                print(f"param group: {param_group}. lr {param_group['lr']}")
                 warmup_lr = lr
                 param_group["lr"] = lr
 
@@ -396,6 +396,7 @@ def predict(generator, data, device, max_predictions=None):
 
 def predict_benchmark(generator, data, device, max_predictions=None):
     resps = []
+    dataset_size = len(data)
     for batch_idx, (batch_qs, batch_qs_pos, batch_as) in enumerate(data):
         start = time.time()
 
@@ -407,9 +408,12 @@ def predict_benchmark(generator, data, device, max_predictions=None):
             a = batch_as[i]
             c = g == a
             resp = {"correct": c, "guess": g, "answer": a, "score": s}
+            print(resp)
             resps.append(resp)
 
-        print(f"Batch {batch_idx} time {time.time() - start}s. {resp}")
+        print(
+            f"Batch {batch_idx} of {math.ceil(dataset_size/len(idx_seqs))}, time {time.time() - start}s."
+        )
 
     return resps
 

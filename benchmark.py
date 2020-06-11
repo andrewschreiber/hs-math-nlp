@@ -24,7 +24,7 @@ def main():
 
     if not torch.cuda.is_available():
         device = torch.device("cpu")
-        batch_size = 1
+        batch_size = 16
     else:
         device = torch.device("cuda")
         batch_size = 1024
@@ -36,9 +36,7 @@ def main():
         CLOUD_WORKSPACE_FOLDER if utils.is_cloud() else LOCAL_WORKSPACE_FOLDER
     )
 
-    model_filepath = (
-        f"{workspace_folder}/checkpoints/checkpoint_b500000_e4_complete.pth"
-    )
+    model_filepath = f"{workspace_folder}/checkpoints/math_112m_bs128_2-3-20_0_5375000_training_0.pth"
 
     # build default transformer model
     model = utils.build_transformer()
