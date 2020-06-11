@@ -338,12 +338,14 @@ class BenchmarkDatasetManager:
         self.extrapolate_files = self._get_files("extrapolate")
 
     def _get_files(self, directory):
-        return [
-            ff
-            for ff in glob.glob(
-                str(self.root_dir / directory) + "**/*.txt", recursive=True
-            )
-        ]
+        return sorted(
+            [
+                ff
+                for ff in glob.glob(
+                    str(self.root_dir / directory) + "**/*.txt", recursive=False
+                )
+            ]
+        )
 
     def get_datasets(self, mode):
         datasets = {}
