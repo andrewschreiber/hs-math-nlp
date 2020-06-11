@@ -16,7 +16,7 @@
 
 
 export IMAGE_FAMILY="pytorch-latest-gpu" \
-export ZONE="us-west1-b" \
+export ZONE="us-central1-b" \
 export INSTANCE_NAME="my-fastai-instance-e" \
 export INSTANCE_TYPE="n1-highmem-8" \
 export PROJECT="hs-math-nlp"
@@ -26,7 +26,7 @@ gcloud compute project-info add-metadata \
     --metadata serial-port-enable=TRUE
 
 # Quick retesting dummy instance
-export INSTANCE_NAME="lstm-1" && \
+export INSTANCE_NAME="benchmark-gpu-1" && \
 gcloud compute instances create $INSTANCE_NAME \
         --zone=$ZONE \
         --image-family=$IMAGE_FAMILY \
@@ -36,7 +36,7 @@ gcloud compute instances create $INSTANCE_NAME \
         --boot-disk-size=50GB \
         --metadata="install-nvidia-driver=True" \
         --preemptible \
-        --accelerator=type=nvidia-tesla-v100,count=1 \
+        --accelerator=type=nvidia-tesla-t4,count=1 \
         --scopes="storage-rw,cloud-platform" \
         --metadata-from-file="startup-script=gce/startup.sh" \
 && gcloud compute connect-to-serial-port $INSTANCE_NAME
@@ -44,22 +44,6 @@ gcloud compute instances create $INSTANCE_NAME \
 # Exit serial port by typing: ~.
 
 gcloud compute connect-to-serial-port $INSTANCE_NAME
-
-
-export INSTANCE_NAME="my-fastai-instance-l" && \
-gcloud compute instances create $INSTANCE_NAME \
-        --zone=$ZONE \
-        --image-family=$IMAGE_FAMILY \
-        --image-project=deeplearning-platform-release \
-        --maintenance-policy=TERMINATE \
-        --machine-type=$INSTANCE_TYPE \
-        --boot-disk-size=50GB \
-        --metadata="install-nvidia-driver=True" \
-        --preemptible \
-        --scopes storage-rw \
-        --metadata-from-file startup-script=gce/prestartup.sh \
-&& watch -n 2 "gcloud compute --project=$PROJECT instances get-serial-port-output $INSTANCE_NAME --zone=$ZONE | tail -40"        
-
 
 watch -n 2 "cat /var/mail/andrew_schreiber1 | tail -40"
 
