@@ -21,7 +21,7 @@ dtype = torch.FloatTensor
 
 # CUDA for PyTorch
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda:0" if use_cuda else "cpu")
+device = torch.device("cuda" if use_cuda else "cpu")
 # cudnn.benchmark = True
 
 # Uni-LSTM(Attention) Parameters
@@ -114,6 +114,12 @@ class TextLSTM(nn.Module):
 
 
 model = TextLSTM()
+
+if torch.cuda.device_count() > 1:
+    print("Using", torch.cuda.device_count(), "GPUs!")
+    model = nn.DataParallel(model)
+
+
 # Specify optimizations algs
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)

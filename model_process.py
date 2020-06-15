@@ -412,7 +412,7 @@ def predict_benchmark(generator, data, device, max_predictions=None):
             resps.append(resp)
 
         print(
-            f"Batch {batch_idx} of {math.ceil(dataset_size/len(idx_seqs))}, time {time.time() - start}s."
+            f"Batch {batch_idx + 1} of {math.ceil(dataset_size/len(idx_seqs))}, time {time.time() - start}s."
         )
 
     return resps
