@@ -71,7 +71,7 @@ class TextLSTM(nn.Module):
         batch_as = batch_as.float()
 
         hidden_state = Variable(
-            torch.zeros(1, batch_size, num_hidden, dtype=torch.float)
+            torch.zeros(1, batch_size, num_hidden, dtype=torch.cuda.FloatTensor)
         )
         cell_state = Variable(torch.zeros(1, batch_size, num_hidden, dtype=torch.float))
         batch_qs = batch_qs.float()  # (162, 16, 95)
@@ -84,7 +84,7 @@ class TextLSTM(nn.Module):
                 batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
             )
         # Extra 15 Computational Steps
-        dummy_input = torch.zeros(1, batch_size, VOCAB_SZ, dtype=torch.float)
+        dummy_input = torch.zeros(1, batch_size, VOCAB_SZ, dtype=torch.cuda.FloatTensor)
         for t in range(15):
             outputs_junk, (hidden_state, cell_state) = self.lstm(
                 dummy_input, (hidden_state, cell_state)
