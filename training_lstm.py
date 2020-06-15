@@ -39,9 +39,9 @@ class TextLSTM(nn.Module):
         batch_as = batch_as[:, 1:]
         batch_as = torch.transpose(batch_as, 0, 1)
         batch_as = torch.nn.functional.one_hot(batch_as, VOCAB_SZ)
-        batch_as = batch_as.float().cuda()
+        batch_as = batch_as.float()
 
-        batch_qs = batch_qs.float().cuda()  # (162, 16, 95)
+        batch_qs = batch_qs.float()  # (162, 16, 95)
 
         hidden_state = Variable(
             torch.zeros(1, batch_size, self.num_hidden, dtype=torch.float)
@@ -50,11 +50,15 @@ class TextLSTM(nn.Module):
             torch.zeros(1, batch_size, self.num_hidden, dtype=torch.float)
         )
         output_seq = torch.empty((MAX_ANSWER_SZ - 1, 16, VOCAB_SZ))
+        thinking_input = torch.zeros(1, batch_size, VOCAB_SZ, dtype=torch.float)
 
         if torch.cuda.is_available():
             hidden_state = hidden_state.cuda()
             cell_state = cell_state.cuda()
             output_seq = output_seq.cuda()
+            thinking_input = thinking_input.cuda()
+            batch_as = batch_as.cuda()
+            batch_qs = batch_qs.cuda()
 
         # Input question phase
         for t in range(MAX_QUESTION_SZ):
@@ -62,10 +66,9 @@ class TextLSTM(nn.Module):
                 batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
             )
         # Extra 15 Computational Steps
-        dummy_input = torch.zeros(1, batch_size, VOCAB_SZ, dtype=torch.float).cuda()
         for t in range(15):
             outputs_junk, (hidden_state, cell_state) = self.lstm(
-                dummy_input, (hidden_state, cell_state)
+                thinking_input, (hidden_state, cell_state)
             )
         # Answer generation phase, need to input correct answer as hidden/cell state, find what to put in input
         for t in range(MAX_ANSWER_SZ - 1):
@@ -95,7 +98,7 @@ class TextLSTM(nn.Module):
 def main():
     # CUDA for PyTorch
     use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda:0" if use_cuda else "cpu")
+    device = torch.device("cuda" if use_cuda else "cpu")
     print(device)
     # cudnn.benchmark = True
 
@@ -103,7 +106,7 @@ def main():
     num_workers = 2
 
     exp_name = "math_test"
-    unique_id = "02-24-2020"
+    unique_id = "6-14-2020"
 
     tb = Tensorboard(exp_name, unique_name=unique_id)
 
