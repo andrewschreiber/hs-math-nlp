@@ -126,7 +126,7 @@ if torch.cuda.device_count() > 1:
     model = nn.DataParallel(model)
     model = model.cuda()
 
- model = model.to(device)
+model = model.to(device)
 
 # model_process.train(
 #     exp_name=exp_name,
