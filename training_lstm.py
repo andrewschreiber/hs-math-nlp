@@ -39,9 +39,9 @@ class TextLSTM(nn.Module):
         batch_as = batch_as[:, 1:]
         batch_as = torch.transpose(batch_as, 0, 1)
         batch_as = torch.nn.functional.one_hot(batch_as, VOCAB_SZ)
-        batch_as = batch_as.float()
+        batch_as = batch_as.float().cuda()
 
-        batch_qs = batch_qs.float()  # (162, 16, 95)
+        batch_qs = batch_qs.float().cuda()  # (162, 16, 95)
 
         hidden_state = Variable(
             torch.zeros(1, batch_size, self.num_hidden, dtype=torch.float)
