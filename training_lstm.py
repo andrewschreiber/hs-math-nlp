@@ -124,6 +124,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 if torch.cuda.device_count() > 1:
     print("Using", torch.cuda.device_count(), "GPUs!")
     model = nn.DataParallel(model)
+    model = model.cuda()
 
  model = model.to(device)
 
