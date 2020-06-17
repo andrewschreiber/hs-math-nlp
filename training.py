@@ -21,6 +21,11 @@ SIMPLE_LSTM = "simLSTM"
 ATTENTIONAL_LSTM = "attLSTM"
 MODELS = [TRANSFORMER, SIMPLE_LSTM, ATTENTIONAL_LSTM]
 
+# Run with:
+#   python training.py -m simLSTM
+# OR, change the default argument in parser:
+#   python training.py
+
 
 def main():
     print(f"Beginning training at {time.time()}...")
@@ -71,7 +76,7 @@ def main():
     batch_size = 1024 if torch.cuda.device_count() > 1 else 32
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
-    warmup_interval = 10000
+    warmup_interval = 10000  # or None
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
@@ -80,6 +85,7 @@ def main():
     # Config
     run_max_batches = 500000  # Defined in paper
     should_restore_checkpoint = True
+    pin_memory = True
 
     print(
         f"Batch size: {batch_size}. Learning rate: {lr}. Warmup_lr: {warmup_lr}. Warmup interval: {warmup_interval}. B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}. Smooth: {smoothing}"
@@ -98,6 +104,8 @@ def main():
     )
 
     tb = Tensorboard(exp, unique_name=unique_id)
+
+    # Run state
     start_batch = 0
     start_epoch = 0
     run_batches = 0
@@ -140,6 +148,7 @@ def main():
     print("start_epoch", start_epoch)
     print("start_batch", start_batch)
     print("total_loss", total_loss)
+
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")
         model = torch.nn.DataParallel(model)
@@ -183,7 +192,7 @@ def main():
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=collate_fn,
-        pin_memory=True,
+        pin_memory=pin_memory,
     )
 
     interpolate_loader = data.DataLoader(
@@ -192,7 +201,7 @@ def main():
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=collate_fn,
-        pin_memory=True,
+        pin_memory=pin_memory,
     )
 
     extrapolate_loader = data.DataLoader(
@@ -201,7 +210,7 @@ def main():
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=collate_fn,
-        pin_memory=True,
+        pin_memory=pin_memory,
     )
 
     model_process.train(
