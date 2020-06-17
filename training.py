@@ -1,87 +1,59 @@
-# import checkpoints
-# from tensorboard_utils import tensorboard_event_accumulator
-from tensorboard_utils import Tensorboard
-from checkpoints import restore_checkpoint, load_latest_checkpoint_from_bucket
-import utils
 import time
 import traceback
-import model_process
 import random
-
-from math_dataset import (
-    # random_split_dataset,
-    question_answer_to_position_batch_collate_fn,
-    # MathDatasetManager,
-    FullDatasetManager,
-)
-
-# from transformer.Models import Transformer
+import torch
 import torch.optim as optim
 from torch.utils import data
-import torch
-import torch.nn as nn
-
 import numpy as np
 import os
-
-# import math
 import multiprocessing
 import signal
+import argparse
+
+import utils
+from math_dataset import FullDatasetManager
+import model_process
+from tensorboard_utils import Tensorboard
+from checkpoints import restore_checkpoint
+
+TRANSFORMER = "transformer"
+SIMPLE_LSTM = "simLSTM"
+ATTENTIONAL_LSTM = "attLSTM"
+MODELS = [TRANSFORMER, SIMPLE_LSTM, ATTENTIONAL_LSTM]
 
 
 def main():
-    print("Beginning training...")
+    print(f"Beginning training at {time.time()}...")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-m", "--model", help="Name of the model", choices=MODELS, default=TRANSFORMER,
+    )
+    args = parser.parse_args()
+    model_type = args.model
+
+    unique_id = f"6-9-20_{model_type}1"
+
+    exp = "math_112m_bs128"
+    name = f"{exp}_{unique_id}"
+    print("Model name:", name)
+
     if utils.is_spot_instance():
         signal.signal(signal.SIGTERM, utils.sigterm_handler)
-        print("Sigterm handler setup")
 
-    # For laptop & deep learning rig testing on the same code
+    # For laptop & deep learning rig testing on the same codebase
     if not torch.cuda.is_available():
         multiprocessing.set_start_method("spawn", True)
         device = torch.device("cpu")
         num_workers = 0
         max_elements = 5
-        # max_batches = None
+        save_checkpoints = False
     else:
         device = torch.device("cuda")
-        # num_workers = 16
         # https://github.com/facebookresearch/maskrcnn-benchmark/issues/195
         num_workers = 0
-
-        # 666666 datapoints per difficulty file
-        # 3 difficulties/module -> 2m datapoints/module
-        # 56 modules
-        # Total dataset of 112m
-        # 224m rows (1 row per questions, 1 row per answer)
-
-        # max_elements *per file*
         max_elements = None
-
-        # Paper model trained for 500k batches with 1028 batch size
-        #   = 512m datapoints used for training
-        # 512m datapoints / 128 batch size = 4m batches
-        # max_batches = 5000000
-
-    print("Device:", device)
-
-    # Paper calls for batch size of 1024
-    # They use 8 P100s (16gb VRAM each) for 500k batches
-    if torch.cuda.device_count() > 1:
-        # Uses somewhere between 80-90GB VRAM
-        batch_size = 1024
-    else:
-        # Uses ~10 GB VRAM
-        # batch_size = 128
-        batch_size = 32
-    print("Batch size:", batch_size)
-
-    start_epoch = 0
-    print("Start epoch:", start_epoch)
-
-    run_batches = 0
-
-    should_restore_checkpoint = True
-    print("Should restore checkpoint:", should_restore_checkpoint)
+        save_checkpoints = True
 
     deterministic = True
     if deterministic:
@@ -95,13 +67,8 @@ def main():
         torch.backends.cudnn.benchmark = False
     shuffle = not deterministic
 
-    print("Deterministic:", deterministic)
-
-    exp_name = "math_112m_bs128"
-    unique_id = "6-9-20_transformer3"
-
-    model = utils.build_transformer()
-
+    # Hyperparameters
+    batch_size = 1024 if torch.cuda.device_count() > 1 else 32
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
     warmup_interval = 10000
@@ -110,9 +77,18 @@ def main():
     eps = 1e-9
     smoothing = False
 
+    # Config
+    run_max_batches = 500000  # Defined in paper
+    should_restore_checkpoint = True
+
     print(
-        f"Learning rate {lr}. Warmup_lr: {warmup_lr}. Warmup batches interval: {warmup_interval}/ B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}. Smoothing: {smoothing}"
+        f"Batch size: {batch_size}. Learning rate: {lr}. Warmup_lr: {warmup_lr}. Warmup interval: {warmup_interval}. B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}. Smooth: {smoothing}"
     )
+    print("Deterministic:", deterministic)
+    print("Device:", device)
+    print("Should restore checkpoint:", should_restore_checkpoint)
+
+    model = utils.build_model(model_type)
 
     optimizer = optim.Adam(
         model.parameters(),
@@ -121,26 +97,26 @@ def main():
         eps=eps,
     )
 
-    tb = Tensorboard(exp_name, unique_name=unique_id)
+    tb = Tensorboard(exp, unique_name=unique_id)
     start_batch = 0
+    start_epoch = 0
+    run_batches = 0
     total_loss = 0
     n_char_total = 0
     n_char_correct = 0
 
     if should_restore_checkpoint:
-        exp = f"{exp_name}_{unique_id}"
-        cp_path = f"checkpoints/{exp}_latest_checkpoint.pth"
+        cp_path = f"checkpoints/{name}_latest_checkpoint.pth"
         # cp_path = "checkpoint_b109375_e0.pth"
 
-        # state = load_latest_checkpoint_from_bucket(
-        # exp=exp, model=model, optimizer=optimizer
-        # )
-        state = restore_checkpoint(cp_path, model=model, optimizer=optimizer,)
+        state = restore_checkpoint(
+            cp_path, model_type=model_type, model=model, optimizer=optimizer,
+        )
 
         if state is not None:
             start_epoch = state["epoch"]
-            best_acc = state["acc"]
-            best_loss = state["loss"]
+            # best_acc = state["acc"]
+            # best_loss = state["loss"]
             run_batches = state["run_batches"]
             lr = state["lr"]
             for param_group in optimizer.param_groups:
@@ -158,16 +134,15 @@ def main():
                         if torch.is_tensor(v):
                             state[k] = v.cuda()
 
-            print("start_epoch", start_epoch)
-            print("start_batch", start_batch)
-            print("best_acc", best_acc)
-            print("best_loss", best_loss)
             print(f"Setting lr to {lr}")
             print("Loaded checkpoint successfully")
 
+    print("start_epoch", start_epoch)
+    print("start_batch", start_batch)
+    print("total_loss", total_loss)
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")
-        model = nn.DataParallel(model)
+        model = torch.nn.DataParallel(model)
 
     model = model.to(device)
 
@@ -200,46 +175,37 @@ def main():
     )
     print("Extrapolate size:", len(ds_extrapolate))
 
-    run_max_batches = 500000  # Defined in paper
-
-    # og_datapoint_iterations = 500000 * 1024  # Paper Batches * batch_size
-
-    # run_max_batches = og_datapoint_iterations / batch_size - 2 * 875000  # 2 epochs
-
-    # print(f"Calculated max batches: {run_max_batches}")
-
-    # we provide the function question_answer_to_position_batch_collate_fn that collates
-    # all questions/answers into transformer format enhanced with char positioning
+    collate_fn = utils.collate_fn(model_type)
 
     train_loader = data.DataLoader(
         ds_train,
         batch_size=batch_size,
-        shuffle=False,
+        shuffle=shuffle,
         num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
+        collate_fn=collate_fn,
         pin_memory=True,
     )
 
     interpolate_loader = data.DataLoader(
         ds_interpolate,
         batch_size=batch_size,
-        shuffle=False,
+        shuffle=shuffle,
         num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
+        collate_fn=collate_fn,
         pin_memory=True,
     )
 
     extrapolate_loader = data.DataLoader(
         ds_extrapolate,
         batch_size=batch_size,
-        shuffle=False,
+        shuffle=shuffle,
         num_workers=num_workers,
-        collate_fn=question_answer_to_position_batch_collate_fn,
+        collate_fn=collate_fn,
         pin_memory=True,
     )
 
     model_process.train(
-        name=f"{exp_name}_{unique_id}",
+        name=name,
         model=model,
         training_data=train_loader,
         optimizer=optimizer,
@@ -256,7 +222,7 @@ def main():
         run_batches=run_batches,
         interpolate_data=interpolate_loader,
         extrapolate_data=extrapolate_loader,
-        checkpoint=True,  # Only save on GPUs
+        checkpoint=save_checkpoints,
         lr=lr,
         warmup_lr=warmup_lr,
         warmup_interval=warmup_interval,

@@ -120,9 +120,9 @@ def build_checkpoint(
     }
 
 
-def restore_checkpoint(filename, model=None, optimizer=None):
+def restore_checkpoint(filename, model_type, model=None, optimizer=None):
     """restores checkpoint state from filename and load in model and optimizer if provided"""
-    print(f"Extracting state from {filename}")
+    print(f"Attempting to extract state from {filename}...")
     if not os.path.exists(filename):
         print("No checkpoint file found")
         return None

@@ -2,8 +2,17 @@ import torch
 import time
 import numpy as np
 import os
-from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
+
+from math_dataset import (
+    VOCAB_SZ,
+    MAX_QUESTION_SZ,
+    MAX_ANSWER_SZ,
+    lstm_batch_collate_fn,
+    question_answer_to_position_batch_collate_fn,
+)
 from transformer.Models import Transformer
+from LSTM.simple import SimpleLSTM
+from training import TRANSFORMER, SIMPLE_LSTM, ATTENTIONAL_LSTM
 
 
 def one_hot_seq(chars, vocab_size=VOCAB_SZ, char0=ord(" ")):
@@ -18,6 +27,28 @@ def torch_one_hot_encode_string(s):
     return q
 
 
+def collate_fn(model_type):
+    if model_type == TRANSFORMER:
+        return question_answer_to_position_batch_collate_fn
+    elif model_type == SIMPLE_LSTM:
+        return lstm_batch_collate_fn
+    elif model_type == ATTENTIONAL_LSTM:
+        raise NotImplementedError
+    else:
+        raise ValueError(f"Invalid model_type {model_type}.")
+
+
+def build_model(model_type):
+    if model_type == TRANSFORMER:
+        return build_transformer()
+    elif model_type == SIMPLE_LSTM:
+        return build_simple_lstm()
+    elif model_type == ATTENTIONAL_LSTM:
+        raise NotImplementedError
+    else:
+        raise ValueError(f"Invalid model_type {model_type}.")
+
+
 def build_transformer(
     n_src_vocab=VOCAB_SZ + 1,
     n_tgt_vocab=VOCAB_SZ + 1,
@@ -30,6 +61,14 @@ def build_transformer(
         len_max_seq_encoder=len_max_seq_encoder,
         len_max_seq_decoder=len_max_seq_decoder,
     )
+
+
+def build_simple_lstm():
+    return SimpleLSTM()
+
+
+def build_att_lstm():
+    return None
 
 
 def is_preempted():

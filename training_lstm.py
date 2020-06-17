@@ -18,6 +18,10 @@ from math_dataset import (
 
 from math_dataset import VOCAB_SZ, MAX_QUESTION_SZ, MAX_ANSWER_SZ
 
+raise AssertionError(
+    "Use training.py with MODEL_TYPE set to utils.SIMPLE_LSTM instead."
+)
+
 
 class TextLSTM(nn.Module):
     def __init__(self):
@@ -132,21 +136,6 @@ def main():
         model = model.cuda()
 
     model = model.to(device)
-
-    # model_process.train(
-    #     exp_name=exp_name,
-    #     unique_id=unique_id,
-    #     model=model,
-    #     training_data=train_loader,
-    #     optimizer=optimizer,
-    #     device=device,
-    #     epochs=1,
-    #     tb=tb,
-    #     max_batches=max_batches,
-    #     validation_data=None,
-    # )
-    # TODO:
-    # Rejigger weight loss calculation as it is different from transformer.
     model_process.train(
         name=f"{exp_name}_{unique_id}",
         model=model,
