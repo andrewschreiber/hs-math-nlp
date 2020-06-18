@@ -10,7 +10,6 @@ class SimpleLSTM(nn.Module):
         self.vocab_sz = vocab_sz
         self.max_answer_sz = max_answer_sz
         self.max_question_sz = max_question_sz
-        self.batch_size = batch_size
 
         self.lstm = nn.LSTM(vocab_sz, self.num_hidden, 1)
         self.tgt_word_prj = nn.Linear(self.num_hidden, vocab_sz, bias=False)
@@ -36,9 +35,7 @@ class SimpleLSTM(nn.Module):
         cell_state = Variable(
             torch.zeros(1, batch_size, self.num_hidden, dtype=torch.float)
         )
-        output_seq = torch.empty(
-            (self.max_answer_sz - 1, self.batch_size, self.vocab_sz)
-        )
+        output_seq = torch.empty((self.max_answer_sz - 1, batch_size, self.vocab_sz))
         thinking_input = torch.zeros(1, batch_size, self.vocab_sz, dtype=torch.float)
 
         if torch.cuda.is_available():

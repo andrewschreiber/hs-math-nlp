@@ -73,7 +73,7 @@ def main():
     shuffle = not deterministic
 
     # Hyperparameters
-    batch_size = 1024 if torch.cuda.device_count() > 1 else 32
+    batch_size = 1024 if torch.cuda.device_count() > 1 else 8
     lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
     warmup_interval = 10000  # or None
