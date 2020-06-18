@@ -22,7 +22,7 @@ echo "~~~~~~~ Start training ~~~~~~~"
 # Logs to serial 2. Connect via: 
 # gcloud compute connect-to-serial-port $INSTANCE_NAME --port 2
 
-echo "python training.py >> /dev/ttyS1" | at now
+echo "python training.py -m simLSTM >> /dev/ttyS1" | at now
 
 sleep 1
 

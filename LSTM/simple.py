@@ -28,7 +28,7 @@ class SimpleLSTM(nn.Module):
         batch_as = nn.functional.one_hot(batch_as, self.vocab_sz)
         batch_as = batch_as.float()
 
-        batch_qs = batch_qs.float()  # (162, 16, 95)
+        batch_qs = batch_qs.float()  # (max_q_sz, batch_sz, vocab_sz)
 
         hidden_state = Variable(
             torch.zeros(1, batch_size, self.num_hidden, dtype=torch.float)
@@ -50,6 +50,7 @@ class SimpleLSTM(nn.Module):
             batch_qs = batch_qs.cuda()
 
         # Input question phase
+        self.lstm.flatten_parameters()
         for t in range(self.max_question_sz):
             outputs, (hidden_state, cell_state) = self.lstm(
                 batch_qs[t].unsqueeze(0), (hidden_state, cell_state)
@@ -62,7 +63,8 @@ class SimpleLSTM(nn.Module):
         # Answer generation phase, need to input correct answer as hidden/cell state, find what to put in input
         for t in range(self.max_answer_sz - 1):
             if t == 0:
-                output_seq[t] = self.tgt_word_prj(outputs)
+                out = self.tgt_word_prj(outputs)
+                output_seq[t] = out
                 char = output_seq[t].clone().unsqueeze(0)
                 outputs, (hidden_state, cell_state) = self.lstm(
                     char, (hidden_state, cell_state)
