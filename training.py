@@ -94,7 +94,7 @@ def main():
     print("Device:", device)
     print("Should restore checkpoint:", should_restore_checkpoint)
 
-    model = utils.build_model(model_type)
+    model = utils.build_model(model_type, batch_size)
 
     optimizer = optim.Adam(
         model.parameters(),

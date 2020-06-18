@@ -38,11 +38,11 @@ def collate_fn(model_type):
         raise ValueError(f"Invalid model_type {model_type}.")
 
 
-def build_model(model_type):
+def build_model(model_type, batch_size):
     if model_type == TRANSFORMER:
         return build_transformer()
     elif model_type == SIMPLE_LSTM:
-        return build_simple_lstm()
+        return build_simple_lstm(batch_size)
     elif model_type == ATTENTIONAL_LSTM:
         raise NotImplementedError
     else:
@@ -63,8 +63,8 @@ def build_transformer(
     )
 
 
-def build_simple_lstm():
-    return SimpleLSTM()
+def build_simple_lstm(batch_size):
+    return SimpleLSTM(VOCAB_SZ, MAX_ANSWER_SZ, MAX_QUESTION_SZ, batch_size)
 
 
 def build_att_lstm():
