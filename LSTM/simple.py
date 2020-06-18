@@ -4,7 +4,7 @@ from torch.autograd import Variable
 
 
 class SimpleLSTM(nn.Module):
-    def __init__(self, vocab_sz, max_answer_sz, max_question_sz, batch_size):
+    def __init__(self, vocab_sz, max_answer_sz, max_question_sz):
         super(SimpleLSTM, self).__init__()
         self.num_hidden = 2048
         self.vocab_sz = vocab_sz
