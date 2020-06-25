@@ -68,7 +68,7 @@ def main():
 
     # Hyperparameters
     batch_size = 1024 if torch.cuda.device_count() > 1 else 8
-    lr = 6e-6
+    lr = 6e-4
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
     warmup_interval = None  # 10000  # or None
     beta_coeff_low = 0.9
@@ -78,7 +78,7 @@ def main():
     weight_sharing = False
 
     # Config
-    unique_id = f"6-24-20_{model_type}0"
+    unique_id = f"6-24-20_{model_type}1"
     exp = "math_112m_bs128"
     name = f"{exp}_{unique_id}"
     run_max_batches = 500000  # Defined in paper
