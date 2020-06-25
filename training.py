@@ -37,12 +37,6 @@ def main():
     args = parser.parse_args()
     model_type = args.model
 
-    unique_id = f"6-9-20_{model_type}1"
-
-    exp = "math_112m_bs128"
-    name = f"{exp}_{unique_id}"
-    print("Model name:", name)
-
     if utils.is_spot_instance():
         signal.signal(signal.SIGTERM, utils.sigterm_handler)
 
@@ -74,19 +68,24 @@ def main():
 
     # Hyperparameters
     batch_size = 1024 if torch.cuda.device_count() > 1 else 8
-    lr = 6e-4
+    lr = 6e-6
     warmup_lr = 6e-6  # TODO: Refactor into custom optimizer class
-    warmup_interval = 10000  # or None
+    warmup_interval = None  # 10000  # or None
     beta_coeff_low = 0.9
     beta_coeff_high = 0.995
     eps = 1e-9
     smoothing = False
+    weight_sharing = False
 
     # Config
+    unique_id = f"6-24-20_{model_type}0"
+    exp = "math_112m_bs128"
+    name = f"{exp}_{unique_id}"
     run_max_batches = 500000  # Defined in paper
     should_restore_checkpoint = True
     pin_memory = True
 
+    print("Model name:", name)
     print(
         f"Batch size: {batch_size}. Learning rate: {lr}. Warmup_lr: {warmup_lr}. Warmup interval: {warmup_interval}. B low {beta_coeff_low}. B high {beta_coeff_high}. eps {eps}. Smooth: {smoothing}"
     )
@@ -94,7 +93,7 @@ def main():
     print("Device:", device)
     print("Should restore checkpoint:", should_restore_checkpoint)
 
-    model = utils.build_model(model_type)
+    model = utils.build_model(model_type, weight_sharing)
 
     optimizer = optim.Adam(
         model.parameters(),

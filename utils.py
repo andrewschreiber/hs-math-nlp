@@ -38,9 +38,9 @@ def collate_fn(model_type):
         raise ValueError(f"Invalid model_type {model_type}.")
 
 
-def build_model(model_type):
+def build_model(model_type, weight_sharing=False):
     if model_type == TRANSFORMER:
-        return build_transformer()
+        return build_transformer(weight_sharing=weight_sharing)
     elif model_type == SIMPLE_LSTM:
         return build_simple_lstm()
     elif model_type == ATTENTIONAL_LSTM:
@@ -54,12 +54,21 @@ def build_transformer(
     n_tgt_vocab=VOCAB_SZ + 1,
     len_max_seq_encoder=MAX_QUESTION_SZ,
     len_max_seq_decoder=MAX_ANSWER_SZ,
+    built_in=False,
+    weight_sharing=False,
 ):
+    # if built_in:
+    #     return torch.nn.Transformer(
+
+    #     )
+
     return Transformer(
         n_src_vocab=n_src_vocab,  # add PAD in vocabulary
         n_tgt_vocab=n_tgt_vocab,  # add PAD in vocabulary
         len_max_seq_encoder=len_max_seq_encoder,
         len_max_seq_decoder=len_max_seq_decoder,
+        tgt_emb_prj_weight_sharing=weight_sharing,
+        emb_src_tgt_weight_sharing=weight_sharing,
     )
 
 
