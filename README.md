@@ -7,6 +7,8 @@
 
 3) Enter the repo folder and run `pip install -r requirements.txt`
 
+4) Download the dataset and unzip in the project root directory (https://console.cloud.google.com/storage/browser/_details/mathematics-dataset/mathematics_dataset-v1.0.tar.gz)
+
 ## Usage
 If you're running on a non CUDA machine (i.e. a laptop), these commands will run with reduced batch size and dataset size for faster testing/debugging.
 
