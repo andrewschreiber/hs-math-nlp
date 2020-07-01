@@ -75,7 +75,7 @@ def main():
     beta_coeff_high = 0.995
     eps = 1e-9
     smoothing = False
-    weight_sharing = False
+    weight_sharing = True
 
     # Config
     unique_id = f"6-24-20_{model_type}1"

@@ -38,7 +38,7 @@ def collate_fn(model_type):
         raise ValueError(f"Invalid model_type {model_type}.")
 
 
-def build_model(model_type, weight_sharing=False):
+def build_model(model_type, weight_sharing):
     if model_type == TRANSFORMER:
         return build_transformer(weight_sharing=weight_sharing)
     elif model_type == SIMPLE_LSTM:
@@ -55,12 +55,11 @@ def build_transformer(
     len_max_seq_encoder=MAX_QUESTION_SZ,
     len_max_seq_decoder=MAX_ANSWER_SZ,
     built_in=False,
-    weight_sharing=False,
+    weight_sharing=True,
 ):
-    # if built_in:
-    #     return torch.nn.Transformer(
-
-    #     )
+    if built_in:
+        raise NotImplementedError("Fix input shape error")
+        return torch.nn.Transformer()
 
     return Transformer(
         n_src_vocab=n_src_vocab,  # add PAD in vocabulary
