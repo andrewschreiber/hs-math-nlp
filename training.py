@@ -78,7 +78,7 @@ def main():
     weight_sharing = True
 
     # Config
-    unique_id = f"6-24-20_{model_type}1"
+    unique_id = f"8-5-20_{model_type}"
     exp = "math_112m_bs128"
     name = f"{exp}_{unique_id}"
     run_max_batches = 500000  # Defined in paper

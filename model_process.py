@@ -33,7 +33,7 @@ def train(
     epochs,
     validation_data=None,
     tb=None,
-    log_interval=100,
+    log_interval=0,
     interpolate_interval=1,
     interpolate_data=None,
     start_epoch=0,
@@ -264,7 +264,8 @@ def train_epoch(
         )
 
         # TODO: automatically trim the TB logs that go beyond the preempted checkpoint
-        if tb is not None and batch_idx % log_interval == 0:
+        should_log = log_interval == 0 or batch_idx % log_interval == 0
+        if tb is not None and should_log:
             tb.add_scalars(
                 {
                     "loss_per_char": loss_per_char,
