@@ -278,6 +278,14 @@ def train_epoch(
                 global_step=run_batch_count,
             )
 
+            for name, param in model.named_parameters():
+                gradient = param.grad
+                if gradient is not None:
+                    # print(f"Param grad name: {name} ")
+                    tb.add_histogram(gradient.numpy(), name=name, global_step=run_batch_count, group="train")
+                else:
+                    print(f"Param grad None. Name {name}")
+
         run_batch_count += 1
 
         if max_batches is not None and run_batch_count == max_batches:

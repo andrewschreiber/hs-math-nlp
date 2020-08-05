@@ -49,3 +49,6 @@ class Tensorboard:
         for key, val in metrics.items():
             cur_name = "/".join([sub_group, key])
             self._get_writer(group).add_scalar(cur_name, val, global_step)
+
+    def add_histogram(self, metrics: any, name: str, global_step: int, group=None):
+        self._get_writer(group).add_histogram(f"gradients/{name}", metrics, global_step)
