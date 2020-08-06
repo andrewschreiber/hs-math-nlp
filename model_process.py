@@ -282,7 +282,7 @@ def train_epoch(
                 gradient = param.grad
                 if gradient is not None:
                     # print(f"Param grad name: {name} ")
-                    tb.add_histogram(gradient.numpy(), name=name, global_step=run_batch_count, group="train")
+                    tb.add_histogram(param.clone().cpu().data.numpy(), name=name, global_step=run_batch_count, group="train")
                 else:
                     print(f"Param grad None. Name {name}")
 
