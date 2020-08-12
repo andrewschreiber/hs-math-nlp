@@ -23,6 +23,7 @@ from checkpoints import (
 )
 from math_dataset import np_encode_string, question_to_position_batch_collate_fn
 
+from bad_grad_viz import register_hooks
 
 def train(
     name,
@@ -33,7 +34,7 @@ def train(
     epochs,
     validation_data=None,
     tb=None,
-    log_interval=0,
+    log_interval=10,
     interpolate_interval=1,
     interpolate_data=None,
     start_epoch=0,
@@ -237,7 +238,11 @@ def train_epoch(
 
         loss, n_correct = compute_performance(pred_as, gold_as, smoothing=smoothing)
 
+        if run_batch_count == 0:
+            get_dot = register_hooks(loss)
         loss.backward()
+        dot = get_dot()
+        dot.save(f'tmp{run_batch_count}.dot')
 
         # Clip gradients, paper uses 0.1
         clip_grad_value_(model.parameters(), 0.1)
@@ -264,7 +269,7 @@ def train_epoch(
         )
 
         # TODO: automatically trim the TB logs that go beyond the preempted checkpoint
-        should_log = log_interval == 0 or batch_idx % log_interval == 0
+        should_log = log_interval == 0 or run_batch_count % log_interval == 0
         if tb is not None and should_log:
             tb.add_scalars(
                 {
@@ -282,7 +287,10 @@ def train_epoch(
                 gradient = param.grad
                 if gradient is not None:
                     # print(f"Param grad name: {name} ")
-                    tb.add_histogram(param.clone().cpu().data.numpy(), name=name, global_step=run_batch_count, group="train")
+                    # param.cpu().grad.numpy()
+                    # param.clone().cpu().data.numpy()
+                    metric = param.cpu().grad.numpy()
+                    tb.add_histogram(metric, name=name, global_step=run_batch_count, group="train")
                 else:
                     print(f"Param grad None. Name {name}")
 

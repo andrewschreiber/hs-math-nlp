@@ -43,7 +43,7 @@ class Tensorboard:
         if group not in self.writers:
             # print(f"Adding group {group} to writers ({self.writers.keys()})")
             self.writers[group] = SummaryWriter(f"{str(self.path)}_{group}")
-        return self.writers[group]
+        return self.writers[group] 
 
     def add_scalars(self, metrics: dict, global_step: int, group=None, sub_group=""):
         for key, val in metrics.items():

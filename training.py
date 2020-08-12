@@ -15,6 +15,7 @@ from math_dataset import FullDatasetManager
 import model_process
 from tensorboard_utils import Tensorboard
 from checkpoints import restore_checkpoint
+from bad_grad_viz import register_hooks
 
 TRANSFORMER = "transformer"
 SIMPLE_LSTM = "simLSTM"
@@ -78,7 +79,7 @@ def main():
     weight_sharing = True
 
     # Config
-    unique_id = f"8-5-20_{model_type}4"
+    unique_id = f"8-6-20_{model_type}_"
     exp = "math_112m_bs128"
     name = f"{exp}_{unique_id}"
     run_max_batches = 500000  # Defined in paper
@@ -212,6 +213,7 @@ def main():
         pin_memory=pin_memory,
     )
 
+    # register_hooks(model)
     model_process.train(
         name=name,
         model=model,
