@@ -22,6 +22,11 @@ For example:
 To run performance benchmarks on the Transformer run
 `python benchmark.py`
 
+### Visualization
+Tensorboard logs are saved to the `runs` folder.
+
+`tensorboard --logdir runs`
+
 ## Colaborators 
 
 - Andrew Schreiber 
