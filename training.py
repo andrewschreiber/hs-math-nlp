@@ -9,6 +9,7 @@ import os
 import multiprocessing
 import signal
 import argparse
+from pathlib import Path
 
 import utils
 from math_dataset import FullDatasetManager
@@ -155,6 +156,10 @@ def main():
     model = model.to(device)
 
     dataset_path = "./mathematics_dataset-v1.0"
+    mini_dataset_path = "./mini_dataset"
+    if not os.path.isdir(Path(dataset_path)):
+        print("Full dataset not detected. Using backup mini dataset for testing. See repo for instructions on downloading full dataset.")
+        dataset_path = mini_dataset_path
 
     ds_train = FullDatasetManager(
         dataset_path,

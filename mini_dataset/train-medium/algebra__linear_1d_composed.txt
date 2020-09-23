@@ -1,0 +1,6 @@
+Let n(m) = m**3 - 7*m**2 + 13*m - 2. Let j be n(4). Solve 0 = 3*x + j*x + 10 for x.
+-2
+Let p(k) = 2*k**2 + k - 2. Let t be p(-3). Suppose -f - t = -5*n, n + 0*n + 4*f = 11. Solve n = o - 2 for o.
+5
+Suppose 0 = 5*y + 51 - 6. Let w = 17 + y. Suppose 0 = -3*b + w*b - 20. Solve b = -0*c - 2*c for c.
+-2

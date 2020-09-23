@@ -1,0 +1,6 @@
+Suppose 1249 + 1001 = -7*l + 17*l. Solve -l = 338*n - 313*n for n.
+-9
+Suppose -2*i + 20 = 5*o, 2*o - 4 = 3*i + o. Suppose -g + 2 = i, 4*g - 6*g = -5*u - 19. Let f be -6 + 3 + 2 + u/(-1). Solve -f*l = -l for l.
+0
+Let s = 3 - 3. Suppose 20 = 8*t - 4. Let h = t - s. Solve 4*a = h*a - 3 for a.
+-3

@@ -1,0 +1,6 @@
+Suppose 12*q + 42 = q + 42. Solve q = 22*t - 0*t - 110 for t.
+5
+Suppose -3*p = -p + m + 60, 3*m + 151 = -5*p. Let u(d) = 2*d**2 + 58*d + 9. Let s be u(p). Solve 3*j = -s - 3 for j.
+-4
+Suppose 8*b - 6*b - 2*q = 16, 0 = q + 5. Let k be (12 - 7 - 8) + 3. Suppose h - 32 = -h + 2*g, -5*g - 20 = 0. Solve b*s + k*s = h for s.
+4

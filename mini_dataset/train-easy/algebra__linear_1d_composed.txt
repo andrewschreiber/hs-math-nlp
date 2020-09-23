@@ -1,0 +1,6 @@
+Let w be (-1 + 13)*3/(-6). Let b = w - -6. Let i = 2 - b. Solve -15 = 3*c + i*c for c.
+-3
+Suppose -c + 4*v + 2 = -24, -4*c - 3*v + 9 = 0. Solve 2*b - c = -b for b.
+2
+Let v(k) = k**3 + k**2 - k - 3. Let d be v(0). Let a be ((-15)/2)/d*4. Let x = a + -8. Solve -3 + 11 = x*p for p.
+4
