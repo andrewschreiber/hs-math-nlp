@@ -19,7 +19,7 @@ For example:
 `python training.py -m transformer`
 
 ### Benchmarking
-To run performance benchmarks on the Transformer run
+To run performance benchmarks on the Transformer run:
 `python benchmark.py`
 
 ### Visualization
